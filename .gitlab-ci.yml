@@ -1,0 +1,18 @@
+image: golang:latest
+
+stages:
+  - test
+
+test:
+  stage: test
+  coverage: '/coverage: \d+.\d+% of statements/'
+  script:
+    - go test -v -race -cover ./...
+
+golangci-lint:
+  stage: test
+  image:
+    name: golangci/golangci-lint:latest
+    entrypoint: [""]
+  script:
+    - golangci-lint run ./...
