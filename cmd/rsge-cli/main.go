@@ -24,6 +24,7 @@ type Command interface {
 type Application struct {
 	Commands  []Command
 	ItemCache map[int64]string
+	Pretty    bool
 }
 
 func (a *Application) completer(in prompt.Document) []prompt.Suggest {
@@ -88,7 +89,7 @@ func (a *Application) executor(in string) {
 	}
 
 	out := &StopSpinnerWriter{Out: os.Stdout}
-	if cmd.WantSpinner() {
+	if cmd.WantSpinner() && a.Pretty {
 		s := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 		s.HideCursor = true
 		s.Start()
@@ -111,12 +112,14 @@ func (a *Application) executor(in string) {
 }
 
 func main() {
+	flag.Parse()
 	a := Application{
 		Commands: []Command{
 			&Search{},
 			&Price{},
 		},
 		ItemCache: make(map[int64]string),
+		Pretty:    flag.NArg() == 0, // if we don't have any left over flags we're gonna be interactive
 	}
 
 	if flag.NArg() > 0 {

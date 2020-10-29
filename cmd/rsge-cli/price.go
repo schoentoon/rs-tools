@@ -53,6 +53,9 @@ func (p *Price) Execute(app *Application, argv string, out io.Writer) error {
 			for _, item := range search {
 				if id == -1 {
 					id = item.ItemID
+					if app.Pretty {
+						fmt.Fprintf(out, "Returning price for %s\n", item.Name)
+					}
 				}
 				app.ItemCache[item.ItemID] = item.Name
 			}
@@ -68,7 +71,11 @@ func (p *Price) Execute(app *Application, argv string, out io.Writer) error {
 	}
 
 	_, latest := graph.LatestPrice()
-	fmt.Fprintf(out, "%d\n", latest)
+	if app.Pretty {
+		prettyPrintPrice(out, latest)
+	} else {
+		fmt.Fprintf(out, "%d\n", latest)
+	}
 
 	return nil
 }
