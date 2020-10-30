@@ -32,25 +32,35 @@ func (s *server) search(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	lower := strings.ToLower(req.Target)
-	for id, name := range s.ItemCache {
+
+	// we first go look through our local item cache, perhaps we have an item with the same name
+	s.itemCacheMutex.RLock()
+	for id, name := range s.itemCache {
 		if strings.ToLower(name) == lower {
 			if err := json.NewEncoder(w).Encode([]searchResponse{{Text: name, Value: id}}); err != nil {
 				log.Printf("json enc: %+v", err)
 			}
+			s.itemCacheMutex.RUnlock()
+			return
 		}
 	}
+	s.itemCacheMutex.RUnlock()
 
+	// otherwise we go online and search for it
 	results, err := ge.SearchItems(req.Target, s.Client)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// afterwards we will of course fill our cache and return the results to the client
+	s.itemCacheMutex.Lock()
+	defer s.itemCacheMutex.Unlock()
 	out := make([]searchResponse, len(results))
 	for i, item := range results {
 		out[i].Text = item.Name
 		out[i].Value = item.ItemID
-		s.ItemCache[item.ItemID] = item.Name
+		s.itemCache[item.ItemID] = item.Name
 	}
 
 	if err := json.NewEncoder(w).Encode(out); err != nil {
@@ -58,17 +68,21 @@ func (s *server) search(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *server) itemIDToItem(itemID int64) string {
-	out, ok := s.ItemCache[itemID]
+func (s *server) itemIDToItem(itemID int64) (string, error) {
+	s.itemCacheMutex.RLock()
+	out, ok := s.itemCache[itemID]
+	s.itemCacheMutex.RUnlock() // we don't RUnlock this with a defer as otherwise it could deadlock later on
 	if ok {
-		return out
+		return out, nil
 	}
 
 	res, err := ge.GetItem(itemID, s.Client)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	s.ItemCache[res.ID] = res.Name
+	s.itemCacheMutex.Lock()
+	s.itemCache[res.ID] = res.Name
+	s.itemCacheMutex.Unlock()
 
-	return res.Name
+	return res.Name, nil
 }

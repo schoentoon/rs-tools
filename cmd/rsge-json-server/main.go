@@ -6,20 +6,24 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"sync"
 )
 
 var port = flag.Int("port", 8000, "http port")
 
 type server struct {
-	ItemCache map[int64]string // TODO this needs a mutex
-	Client    *http.Client
+	itemCache      map[int64]string // TODO this needs a mutex
+	itemCacheMutex sync.RWMutex
+
+	Client *http.Client
 }
 
 func main() {
 	flag.Parse()
 
 	s := server{
-		ItemCache: make(map[int64]string),
+		itemCache: make(map[int64]string),
+		Client:    http.DefaultClient,
 	}
 
 	// initialize routes, and start http server

@@ -36,10 +36,12 @@ func (s *server) query(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	outArray := make([]queryResponse{}, 0, len(req.Targets))
+	// setup channels to receive responses
+	outArray := make([]queryResponse, 0, len(req.Targets))
 	ch := make(chan queryResponse, len(req.Targets))
-	errCh := make(chan error)
+	errCh := make(chan error, 1)
 
+	// fire up a goroutine for every target, fetch the price graph and prepare it to the desired output
 	for _, target := range req.Targets {
 		go func(target int64) {
 			graph, err := ge.PriceGraph(target, s.Client)
@@ -47,8 +49,13 @@ func (s *server) query(w http.ResponseWriter, r *http.Request) {
 				errCh <- err
 				return
 			}
+			name, err := s.itemIDToItem(target)
+			if err != nil {
+				errCh <- err
+				return
+			}
 			out := queryResponse{
-				Target:     s.itemIDToItem(target),
+				Target:     name,
 				Datapoints: make([][]int64, 0, len(graph.Graph)),
 			}
 			for when, price := range graph.Graph {
@@ -62,6 +69,7 @@ func (s *server) query(w http.ResponseWriter, r *http.Request) {
 		}(target.Target)
 	}
 
+	// on our main thread, listen for responses and append them to an end result
 	for range req.Targets {
 		select {
 		case data := <-ch:
@@ -72,6 +80,7 @@ func (s *server) query(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// sort the endresults by name, to prevent the plugin from shuffling around results/graph colors upon refreshes
 	sort.SliceStable(outArray, func(i, j int) bool { return outArray[i].Target < outArray[j].Target })
 
 	if err := json.NewEncoder(w).Encode(outArray); err != nil {
