@@ -12,6 +12,7 @@ var port = flag.Int("port", 8000, "http port")
 
 type server struct {
 	ItemCache map[int64]string // TODO this needs a mutex
+	Client    *http.Client
 }
 
 func main() {

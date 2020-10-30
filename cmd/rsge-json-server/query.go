@@ -36,27 +36,43 @@ func (s *server) query(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	outArray := []queryResponse{}
+	outArray := make([]queryResponse{}, 0, len(req.Targets))
+	ch := make(chan queryResponse, len(req.Targets))
+	errCh := make(chan error)
 
-	// TODO execute this in parallel in case of multiple targets
 	for _, target := range req.Targets {
-		graph, err := ge.PriceGraph(target.Target, http.DefaultClient)
-		if err != nil {
+		go func(target int64) {
+			graph, err := ge.PriceGraph(target, s.Client)
+			if err != nil {
+				errCh <- err
+				return
+			}
+			out := queryResponse{
+				Target:     s.itemIDToItem(target),
+				Datapoints: make([][]int64, 0, len(graph.Graph)),
+			}
+			for when, price := range graph.Graph {
+				// TODO filter on the actually specified times
+				out.Datapoints = append(out.Datapoints, []int64{int64(price), when.Unix() * 1000})
+			}
+
+			sort.SliceStable(out.Datapoints, func(i, j int) bool { return out.Datapoints[i][1] < out.Datapoints[j][1] })
+
+			ch <- out
+		}(target.Target)
+	}
+
+	for range req.Targets {
+		select {
+		case data := <-ch:
+			outArray = append(outArray, data)
+		case err := <-errCh:
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		out := queryResponse{
-			Target:     s.itemIDToItem(target.Target),
-			Datapoints: make([][]int64, 0, len(graph.Graph)),
-		}
-		for when, price := range graph.Graph {
-			out.Datapoints = append(out.Datapoints, []int64{int64(price), when.Unix() * 1000})
-		}
-
-		sort.SliceStable(out.Datapoints, func(i, j int) bool { return out.Datapoints[i][1] < out.Datapoints[j][1] })
-
-		outArray = append(outArray, out)
 	}
+
+	sort.SliceStable(outArray, func(i, j int) bool { return outArray[i].Target < outArray[j].Target })
 
 	if err := json.NewEncoder(w).Encode(outArray); err != nil {
 		log.Printf("json enc: %+v", err)

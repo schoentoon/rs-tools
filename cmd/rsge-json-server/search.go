@@ -40,7 +40,7 @@ func (s *server) search(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	results, err := ge.SearchItems(req.Target, http.DefaultClient)
+	results, err := ge.SearchItems(req.Target, s.Client)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -64,7 +64,7 @@ func (s *server) itemIDToItem(itemID int64) string {
 		return out
 	}
 
-	res, err := ge.GetItem(itemID, http.DefaultClient)
+	res, err := ge.GetItem(itemID, s.Client)
 	if err != nil {
 		panic(err)
 	}
