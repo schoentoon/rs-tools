@@ -17,4 +17,5 @@ go.sum
 
 # binaries
 rsge-cli
-!cmd/rsge-cli
+rsge-json-server
+!cmd/*
