@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/alecthomas/assert"
+	"github.com/stretchr/testify/assert"
 	"gitlab.com/schoentoon/rs-tools/lib"
 )
 
