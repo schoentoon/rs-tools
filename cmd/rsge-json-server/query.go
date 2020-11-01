@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"sort"
+	"time"
 
 	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
@@ -16,12 +17,18 @@ import (
 //"__interval_ms":{"text":2000,"value":2000}},"maxDataPoints":1860,"liveStreaming":false,"showingGraph":true,"showingTable":true,"adhocFilters":[]}
 
 type queryRequest struct {
-	Targets []target `json:"targets"`
+	Targets []target  `json:"targets"`
+	Range   timeRange `json:"range"`
 }
 
 type target struct {
 	Target int64  `json:"target"`
 	Type   string `json:"type"`
+}
+
+type timeRange struct {
+	From time.Time `json:"from"`
+	To   time.Time `json:"to"`
 }
 
 type queryResponse struct {
@@ -59,8 +66,9 @@ func (s *server) query(w http.ResponseWriter, r *http.Request) {
 				Datapoints: make([][]int64, 0, len(graph.Graph)),
 			}
 			for when, price := range graph.Graph {
-				// TODO filter on the actually specified times
-				out.Datapoints = append(out.Datapoints, []int64{int64(price), when.Unix() * 1000})
+				if when.After(req.Range.From) && when.Before(req.Range.To) {
+					out.Datapoints = append(out.Datapoints, []int64{int64(price), when.Unix() * 1000})
+				}
 			}
 
 			sort.SliceStable(out.Datapoints, func(i, j int) bool { return out.Datapoints[i][1] < out.Datapoints[j][1] })
