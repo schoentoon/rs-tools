@@ -7,24 +7,29 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"sync"
+
+	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
 
 var port = flag.Int("port", 8000, "http port")
 
 type server struct {
-	itemCache      map[int64]string // TODO this needs a mutex
+	itemCache      map[int64]string
 	itemCacheMutex sync.RWMutex
+	ge             ge.GeInterface
+}
 
-	Client *http.Client
+func NewServer(client *http.Client) *server {
+	return &server{
+		itemCache: make(map[int64]string),
+		ge:        &ge.Ge{Client: client},
+	}
 }
 
 func main() {
 	flag.Parse()
 
-	s := server{
-		itemCache: make(map[int64]string),
-		Client:    http.DefaultClient,
-	}
+	s := NewServer(http.DefaultClient)
 
 	// initialize routes, and start http server
 	http.HandleFunc("/search", cors(s.search))

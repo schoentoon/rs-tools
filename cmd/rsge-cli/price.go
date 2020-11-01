@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
-	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
 
 type Price struct {
@@ -45,7 +43,7 @@ func (p *Price) Execute(app *Application, argv string, out io.Writer) error {
 		}
 		// if it still doesn't look like it we go do a lookup
 		if id == -1 {
-			search, err := ge.SearchItems(argv, http.DefaultClient)
+			search, err := app.Ge.SearchItems(argv)
 			if err != nil {
 				return err
 			}
@@ -65,7 +63,7 @@ func (p *Price) Execute(app *Application, argv string, out io.Writer) error {
 		}
 	}
 
-	graph, err := ge.PriceGraph(id, http.DefaultClient)
+	graph, err := app.Ge.PriceGraph(id)
 	if err != nil {
 		return err
 	}

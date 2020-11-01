@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
 
 type searchRequest struct {
@@ -30,6 +28,7 @@ func (s *server) search(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewEncoder(w).Encode(struct{}{}); err != nil {
 			log.Printf("json enc: %+v", err)
 		}
+		return
 	}
 	lower := strings.ToLower(req.Target)
 
@@ -47,7 +46,7 @@ func (s *server) search(w http.ResponseWriter, r *http.Request) {
 	s.itemCacheMutex.RUnlock()
 
 	// otherwise we go online and search for it
-	results, err := ge.SearchItems(req.Target, s.Client)
+	results, err := s.ge.SearchItems(req.Target)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -76,7 +75,7 @@ func (s *server) itemIDToItem(itemID int64) (string, error) {
 		return out, nil
 	}
 
-	res, err := ge.GetItem(itemID, s.Client)
+	res, err := s.ge.GetItem(itemID)
 	if err != nil {
 		return "", err
 	}

@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"net/http"
 
 	"github.com/c-bata/go-prompt"
-	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
 
 type Search struct {
@@ -21,7 +19,7 @@ func (s *Search) Autocomplete(app *Application, in prompt.Document) []prompt.Sug
 func (s *Search) WantSpinner() bool { return true }
 
 func (s *Search) Execute(app *Application, argv string, out io.Writer) error {
-	items, err := ge.SearchItems(argv, http.DefaultClient)
+	items, err := app.Ge.SearchItems(argv)
 	if err != nil {
 		return err
 	}

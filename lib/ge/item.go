@@ -3,7 +3,6 @@ package ge
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 /*
@@ -28,8 +27,8 @@ type Item struct {
 	Description string `json:"description"`
 }
 
-func GetItem(itemID int64, client *http.Client) (*Item, error) {
-	resp, err := client.Get(fmt.Sprintf("https://secure.runescape.com/m=itemdb_rs/api/catalogue/detail.json?item=%d", itemID))
+func (g *Ge) GetItem(itemID int64) (*Item, error) {
+	resp, err := g.Client.Get(fmt.Sprintf("https://secure.runescape.com/m=itemdb_rs/api/catalogue/detail.json?item=%d", itemID))
 	if err != nil {
 		return nil, err
 	}

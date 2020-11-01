@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/c-bata/go-prompt"
 	"github.com/c-bata/go-prompt/completer"
+	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
 
 type Command interface {
@@ -25,6 +27,7 @@ type Application struct {
 	Commands  []Command
 	ItemCache map[int64]string
 	Pretty    bool
+	Ge        ge.GeInterface
 }
 
 func (a *Application) completer(in prompt.Document) []prompt.Suggest {
@@ -120,6 +123,7 @@ func main() {
 		},
 		ItemCache: make(map[int64]string),
 		Pretty:    flag.NArg() == 0, // if we don't have any left over flags we're gonna be interactive
+		Ge:        &ge.Ge{http.DefaultClient},
 	}
 
 	if flag.NArg() > 0 {

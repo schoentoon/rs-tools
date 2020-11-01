@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"sort"
 	"time"
-
-	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
 
 // {"app":"explore","dashboardId":0,"timezone":"browser","startTime":1604025095900,"interval":"2s","intervalMs":2000,"panelId":"Q-4fd19502-9294-45db-b54c-52afbfae11a0-0",
@@ -51,7 +49,7 @@ func (s *server) query(w http.ResponseWriter, r *http.Request) {
 	// fire up a goroutine for every target, fetch the price graph and prepare it to the desired output
 	for _, target := range req.Targets {
 		go func(target int64) {
-			graph, err := ge.PriceGraph(target, s.Client)
+			graph, err := s.ge.PriceGraph(target)
 			if err != nil {
 				errCh <- err
 				return

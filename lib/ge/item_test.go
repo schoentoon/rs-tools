@@ -22,7 +22,8 @@ func TestGetItemValid(t *testing.T) {
 			}
 		  }`
 	})
-	item, err := GetItem(245, client)
+	ge := Ge{Client: client}
+	item, err := ge.GetItem(245)
 	assert.Nil(t, err)
 	assert.NotNil(t, item)
 	assert.Equal(t, item.ID, int64(245))
@@ -33,7 +34,8 @@ func TestGetItemNotFound(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
 		return 404, `{}`
 	})
-	item, err := GetItem(245, client)
+	ge := Ge{Client: client}
+	item, err := ge.GetItem(245)
 	assert.NotNil(t, err)
 	assert.Nil(t, item)
 	assert.EqualError(t, err, "HTTP Status: 404 ")
@@ -43,7 +45,8 @@ func TestGetItemInvalidJSON(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
 		return 200, `{`
 	})
-	item, err := GetItem(245, client)
+	ge := Ge{Client: client}
+	item, err := ge.GetItem(245)
 	assert.NotNil(t, err)
 	assert.Nil(t, item)
 }

@@ -2,7 +2,6 @@ package ge
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
 
@@ -14,8 +13,8 @@ type SearchResult struct {
 	Name   string
 }
 
-func SearchItems(query string, client *http.Client) ([]SearchResult, error) {
-	resp, err := client.PostForm("https://secure.runescape.com/m=itemdb_rs/a=13/results", url.Values{"query": {query}})
+func (g *Ge) SearchItems(query string) ([]SearchResult, error) {
+	resp, err := g.Client.PostForm("https://secure.runescape.com/m=itemdb_rs/a=13/results", url.Values{"query": {query}})
 	if err != nil {
 		return nil, err
 	}
@@ -52,6 +51,6 @@ func SearchItems(query string, client *http.Client) ([]SearchResult, error) {
 	return out, nil
 }
 
-func (s *SearchResult) Graph(client *http.Client) (*Graph, error) {
-	return PriceGraph(s.ItemID, client)
+func (s *SearchResult) Graph(ge GeInterface) (*Graph, error) {
+	return ge.PriceGraph(s.ItemID)
 }
