@@ -6,9 +6,10 @@ stages:
 
 test:
   stage: test
-  coverage: '/coverage: \d+.\d+% of statements/'
+  coverage: '/total:\s+\(statements\)\s+(\d+.\d+\%)/'
   script:
-    - go test -v -race -cover ./...
+    - go test -race $(go list ./... | grep -v /vendor/) -v -coverprofile=coverage.out
+    - go tool cover -func=coverage.out
 
 golangci-lint:
   stage: test
