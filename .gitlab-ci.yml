@@ -27,3 +27,18 @@ build:
     - find cmd -type d -mindepth 1 -maxdepth 1 -exec go build ./{}/... \;
   artifacts:
     untracked: true
+
+docker-build-master:
+  stage: build
+  image: docker:latest
+  tags:
+    - docker
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master
