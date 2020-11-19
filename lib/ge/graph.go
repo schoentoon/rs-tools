@@ -3,6 +3,7 @@ package ge
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -19,7 +20,14 @@ type Graph struct {
 }
 
 func (g *Ge) PriceGraph(itemID int64) (*Graph, error) {
-	resp, err := g.Client.Get(fmt.Sprintf("https://secure.runescape.com/m=itemdb_rs/api/graph/%d.json", itemID))
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://secure.runescape.com/m=itemdb_rs/api/graph/%d.json", itemID), nil)
+	if err != nil {
+		return nil, err
+	}
+	if g.UserAgent != "" {
+		req.Header.Set("User-Agent", g.UserAgent)
+	}
+	resp, err := g.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}

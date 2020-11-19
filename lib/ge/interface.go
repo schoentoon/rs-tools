@@ -9,5 +9,6 @@ type GeInterface interface {
 }
 
 type Ge struct {
-	Client *http.Client
+	Client    *http.Client
+	UserAgent string
 }

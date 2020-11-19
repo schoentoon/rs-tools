@@ -2,8 +2,10 @@ package ge
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -14,7 +16,14 @@ type SearchResult struct {
 }
 
 func (g *Ge) SearchItems(query string) ([]SearchResult, error) {
-	resp, err := g.Client.PostForm("https://secure.runescape.com/m=itemdb_rs/a=13/results", url.Values{"query": {query}})
+	req, err := http.NewRequest("POST", "https://secure.runescape.com/m=itemdb_rs/a=13/results", strings.NewReader(url.Values{"query": {query}}.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	if g.UserAgent != "" {
+		req.Header.Set("User-Agent", g.UserAgent)
+	}
+	resp, err := g.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}

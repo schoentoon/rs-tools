@@ -3,6 +3,7 @@ package ge
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 )
 
 /*
@@ -28,7 +29,14 @@ type Item struct {
 }
 
 func (g *Ge) GetItem(itemID int64) (*Item, error) {
-	resp, err := g.Client.Get(fmt.Sprintf("https://secure.runescape.com/m=itemdb_rs/api/catalogue/detail.json?item=%d", itemID))
+	req, err := http.NewRequest("GET", fmt.Sprintf("https://secure.runescape.com/m=itemdb_rs/api/catalogue/detail.json?item=%d", itemID), nil)
+	if err != nil {
+		return nil, err
+	}
+	if g.UserAgent != "" {
+		req.Header.Set("User-Agent", g.UserAgent)
+	}
+	resp, err := g.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
