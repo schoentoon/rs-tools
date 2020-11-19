@@ -13,6 +13,7 @@ import (
 type SearchResult struct {
 	ItemID int64
 	Name   string
+	Image  string
 }
 
 func (g *Ge) SearchItems(query string) ([]SearchResult, error) {
@@ -50,9 +51,19 @@ func (g *Ge) SearchItems(query string) ([]SearchResult, error) {
 			if err != nil {
 				return
 			}
+
+			var img string
+			s.Find("img").Each(func(i int, s *goquery.Selection) {
+				src, o := s.Attr("src")
+				if o && img == "" {
+					img = src
+				}
+			})
+
 			out = append(out, SearchResult{
 				ItemID: id,
 				Name:   title,
+				Image:  img,
 			})
 		}
 	})

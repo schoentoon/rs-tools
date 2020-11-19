@@ -22,6 +22,10 @@ func TestSearch(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, res)
 	assert.Len(t, res, 6)
+
+	assert.Equal(t, int64(1993), res[0].ItemID)
+	assert.Equal(t, "Jug of wine", res[0].Name)
+	assert.Equal(t, "https://secure.runescape.com/m=itemdb_rs/a=13/1603720907702_obj_sprite.gif?id=1993", res[0].Image)
 }
 
 func TestSearchNotFound(t *testing.T) {
