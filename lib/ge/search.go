@@ -16,7 +16,7 @@ type SearchResult struct {
 	Image  string
 }
 
-func (g *Ge) SearchItems(query string) ([]SearchResult, error) {
+func (g *Ge) SearchItems(query string) ([]Item, error) {
 	req, err := http.NewRequest("POST", "https://secure.runescape.com/m=itemdb_rs/a=13/results", strings.NewReader(url.Values{"query": {query}}.Encode()))
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (g *Ge) SearchItems(query string) ([]SearchResult, error) {
 		return nil, err
 	}
 
-	out := []SearchResult{}
+	out := []Item{}
 	doc.Find(".table-item-link").Each(func(i int, s *goquery.Selection) {
 		href, h := s.Attr("href")
 		title, t := s.Attr("title")
@@ -60,10 +60,10 @@ func (g *Ge) SearchItems(query string) ([]SearchResult, error) {
 				}
 			})
 
-			out = append(out, SearchResult{
-				ItemID: id,
-				Name:   title,
-				Image:  img,
+			out = append(out, Item{
+				ID:   id,
+				Name: title,
+				Icon: img,
 			})
 		}
 	})

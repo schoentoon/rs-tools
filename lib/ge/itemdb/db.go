@@ -2,7 +2,9 @@ package itemdb
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"strings"
 	"sync"
 
 	"gitlab.com/schoentoon/rs-tools/lib/ge"
@@ -70,4 +72,38 @@ func NewFromReader(r io.Reader) (*DB, error) {
 	}
 
 	return db, nil
+}
+
+func (db *DB) SearchItems(query string) ([]ge.Item, error) {
+	db.mutex.RLock()
+	defer db.mutex.RUnlock()
+
+	item, ok := db.nameToItems[query]
+	if ok {
+		return []ge.Item{
+			*item,
+		}, nil
+	}
+
+	query = strings.ToLower(query)
+	out := []ge.Item{}
+	for name, item := range db.nameToItems {
+		if strings.Contains(strings.ToLower(name), query) {
+			out = append(out, *item)
+		}
+	}
+
+	return out, nil
+}
+
+func (db *DB) GetItem(itemID int64) (*ge.Item, error) {
+	db.mutex.RLock()
+	defer db.mutex.RUnlock()
+
+	item, ok := db.idToItems[itemID]
+	if ok {
+		return item, nil
+	}
+
+	return nil, fmt.Errorf("No item found with id: %d", itemID)
 }
