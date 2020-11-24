@@ -43,19 +43,19 @@ func (p *Price) Execute(app *Application, argv string, out io.Writer) error {
 		}
 		// if it still doesn't look like it we go do a lookup
 		if id == -1 {
-			search, err := app.Ge.SearchItems(argv)
+			search, err := app.Search.SearchItems(argv)
 			if err != nil {
 				return err
 			}
 
 			for _, item := range search {
 				if id == -1 {
-					id = item.ItemID
+					id = item.ID
 					if app.Pretty {
 						fmt.Fprintf(out, "Returning price for %s\n", item.Name)
 					}
 				}
-				app.ItemCache[item.ItemID] = item.Name
+				app.ItemCache[item.ID] = item.Name
 			}
 		}
 		if id == -1 {

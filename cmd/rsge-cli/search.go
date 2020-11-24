@@ -19,14 +19,14 @@ func (s *Search) Autocomplete(app *Application, in prompt.Document) []prompt.Sug
 func (s *Search) WantSpinner() bool { return true }
 
 func (s *Search) Execute(app *Application, argv string, out io.Writer) error {
-	items, err := app.Ge.SearchItems(argv)
+	items, err := app.Search.SearchItems(argv)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		app.ItemCache[item.ItemID] = item.Name
-		fmt.Fprintf(out, "%s - %d\n", item.Name, item.ItemID)
+		app.ItemCache[item.ID] = item.Name
+		fmt.Fprintf(out, "%s - %d\n", item.Name, item.ID)
 	}
 
 	return nil

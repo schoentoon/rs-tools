@@ -28,6 +28,7 @@ type Application struct {
 	ItemCache map[int64]string
 	Pretty    bool
 	Ge        ge.GeInterface
+	Search    ge.SearchItemInterface
 }
 
 func (a *Application) completer(in prompt.Document) []prompt.Suggest {
@@ -116,6 +117,14 @@ func (a *Application) executor(in string) {
 
 func main() {
 	flag.Parse()
+	ge := &ge.Ge{
+		Client: http.DefaultClient,
+		// It's not very nice to 'abuse' the firefox user agent here.. but for the only not really api
+		// call they have on the ge website a captcha tended to get in the way sometimes. on first sight
+		// switching to this user agent seemed to work around it, nasty but it works I guess
+		// just don't call Search too often because of this really
+		UserAgent: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.0",
+	}
 	a := Application{
 		Commands: []Command{
 			&Search{},
@@ -124,14 +133,8 @@ func main() {
 		},
 		ItemCache: make(map[int64]string),
 		Pretty:    flag.NArg() == 0, // if we don't have any left over flags we're gonna be interactive
-		Ge: &ge.Ge{
-			Client: http.DefaultClient,
-			// It's not very nice to 'abuse' the firefox user agent here.. but for the only not really api
-			// call they have on the ge website a captcha tended to get in the way sometimes. on first sight
-			// switching to this user agent seemed to work around it, nasty but it works I guess
-			// just don't call Search too often because of this really
-			UserAgent: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.0",
-		},
+		Ge:        ge,
+		Search:    ge,
 	}
 
 	if flag.NArg() > 0 {

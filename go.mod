@@ -15,6 +15,8 @@ require (
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	github.com/vbauerster/mpb/v4 v4.12.2
+	github.com/vbauerster/mpb/v5 v5.3.0
 	google.golang.org/grpc v1.33.1
 	gopkg.in/telegram-bot-api.v4 v4.6.4
 )

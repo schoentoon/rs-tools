@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
@@ -22,7 +23,22 @@ type downloadTask struct {
 	alpha    rune
 }
 
-func (t *downloadTask) Process(client *http.Client, db *DB) error {
+type Progress struct {
+	Tasks    int64
+	Finished int64
+}
+
+func (p *Progress) Send(ch chan<- *Progress) {
+	// send it non blocking as we have no clue about the underlaying channel
+	if ch != nil {
+		select {
+		case ch <- p:
+		default:
+		}
+	}
+}
+
+func (t *downloadTask) Process(client *http.Client, db *DB, progCh chan<- *Progress, progress *Progress) error {
 	for page := 1; ; page++ {
 		out := &items{}
 
@@ -54,27 +70,45 @@ func (t *downloadTask) Process(client *http.Client, db *DB) error {
 			}
 		}
 
+		atomic.AddInt64(&progress.Finished, 1)
+		progress.Send(progCh)
+
 		// in case we have less than 12 items (that's the maximum amount returned)
 		// or no items at all, this will be the last page and we cleanly exit
 		if len(out.Items) < 12 || len(out.Items) == 0 {
 			return nil
 		}
+
+		// looks like we have an extra task
+		atomic.AddInt64(&progress.Tasks, 1)
+		progress.Send(progCh)
 	}
 }
 
-func Download(client *http.Client, concurrency int) (*DB, error) {
+func Download(client *http.Client, concurrency int, progCh chan<- *Progress) (*DB, error) {
 	db := New()
-	err := db.Update(client, concurrency)
+	err := db.Update(client, concurrency, progCh)
 	if err != nil {
 		return nil, err
 	}
 	return db, nil
 }
 
-func (db *DB) Update(client *http.Client, concurrency int) (err error) {
+func (db *DB) Update(client *http.Client, concurrency int, progCh chan<- *Progress) (err error) {
 	var wg sync.WaitGroup
 	ch := make(chan downloadTask)
 	errCh := make(chan error, 1)
+
+	progress := &Progress{
+		Tasks:    42 * 27,
+		Finished: 0,
+	}
+
+	if progCh != nil {
+		defer func() {
+			close(progCh)
+		}()
+	}
 
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
@@ -82,7 +116,7 @@ func (db *DB) Update(client *http.Client, concurrency int) (err error) {
 			defer wg.Done()
 
 			for task := range ch {
-				err := task.Process(client, db)
+				err := task.Process(client, db, progCh, progress)
 				if err != nil {
 					errCh <- err
 					return
