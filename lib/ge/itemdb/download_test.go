@@ -2,6 +2,7 @@ package itemdb
 
 import (
 	"net/http"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -21,7 +22,19 @@ func TestDownload(t *testing.T) {
 		return 200, `{"items":[{"id":42,"name":"Test"}]}`
 	})
 
-	db, err := Download(client, 2)
+	ch := make(chan *Progress, 1)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func(ch chan *Progress) {
+		received := 0
+		for range ch {
+			received++
+		}
+		assert.Greater(t, received, 0)
+		wg.Done()
+	}(ch)
+
+	db, err := Download(client, 2, ch)
 	assert.Nil(t, err)
 	assert.Len(t, db.idToItems, 1)
 
@@ -35,7 +48,7 @@ func TestDownloadFail(t *testing.T) {
 		return 404, "we're always gonna give a false response"
 	})
 
-	db, err := Download(client, 2)
+	db, err := Download(client, 2, nil)
 	assert.Nil(t, db)
 	assert.Error(t, err)
 }
