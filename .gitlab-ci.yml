@@ -17,7 +17,7 @@ golangci-lint:
     name: golangci/golangci-lint:latest
     entrypoint: [""]
   script:
-    - golangci-lint run ./...
+    - golangci-lint run --timeout 5m ./...
 
 build:
   stage: build
