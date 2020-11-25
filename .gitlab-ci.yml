@@ -4,9 +4,15 @@ stages:
   - test
   - build
 
+.go-generate: &go-generate
+  before_script:
+    - go mod download && go install golang.org/x/tools/cmd/stringer
+    - go generate ./...
+
 test:
   stage: test
   coverage: '/total:\s+\(statements\)\s+(\d+.\d+\%)/'
+  <<: *go-generate
   script:
     - go test -race $(go list ./... | grep -v /vendor/) -v -coverprofile=coverage.out
     - go tool cover -func=coverage.out
@@ -16,13 +22,13 @@ golangci-lint:
   image:
     name: golangci/golangci-lint:latest
     entrypoint: [""]
+  <<: *go-generate
   script:
     - golangci-lint run --timeout 5m ./...
 
 build:
   stage: build
-  before_script:
-    - go mod download
+  <<: *go-generate
   script:
     - find cmd -type d -mindepth 1 -maxdepth 1 -exec go build ./{}/... \;
   artifacts:
