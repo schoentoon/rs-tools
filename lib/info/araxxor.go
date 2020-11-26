@@ -12,7 +12,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type AraxxorPath struct {
+type AraxxorPathInfo struct {
 	Minions     bool
 	Acid        bool
 	Darkness    bool
@@ -22,7 +22,7 @@ type AraxxorPath struct {
 
 var daysLeftRegex = regexp.MustCompile(`Days until next rotation: (\d)`)
 
-func AraxxorClosedPath(client *http.Client) (*AraxxorPath, error) {
+func AraxxorPath(client *http.Client) (*AraxxorPathInfo, error) {
 	params := url.Values{
 		"action":             {"parse"},
 		"format":             {"json"},
@@ -58,7 +58,7 @@ func AraxxorClosedPath(client *http.Client) (*AraxxorPath, error) {
 		return nil, err
 	}
 
-	out := &AraxxorPath{}
+	out := &AraxxorPathInfo{}
 
 	doc.Find("td").Each(func(i int, s *goquery.Selection) {
 		switch i {

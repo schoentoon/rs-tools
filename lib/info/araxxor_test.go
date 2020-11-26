@@ -18,7 +18,7 @@ func TestAraxxor(t *testing.T) {
 		return 200, string(data)
 	})
 
-	res, err := AraxxorClosedPath(client)
+	res, err := AraxxorPath(client)
 
 	assert.Nil(t, err)
 	assert.True(t, res.Minions)

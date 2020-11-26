@@ -27,6 +27,7 @@ type Application struct {
 	Commands  []Command
 	ItemCache map[int64]string
 	Pretty    bool
+	Client    *http.Client
 	Ge        ge.GeInterface
 	Search    ge.SearchItemInterface
 }
@@ -130,9 +131,12 @@ func main() {
 			&Search{},
 			&Price{},
 			&ItemDB{},
+			&VoiceOfSeren{},
+			&Araxxor{},
 		},
 		ItemCache: make(map[int64]string),
 		Pretty:    flag.NArg() == 0, // if we don't have any left over flags we're gonna be interactive
+		Client:    http.DefaultClient,
 		Ge:        ge,
 		Search:    ge,
 	}
