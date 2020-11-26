@@ -1,0 +1,36 @@
+{
+    "pagination": {
+      "has_more": true,
+      "total_pages": 667,
+      "total_items": 6663
+    },
+    "data": [
+      {
+        "_id": "5fbfa70cfeedc679f1625b00",
+        "districts": [
+          "Ithell",
+          "Crwys"
+        ],
+        "date": "2020-11-26T13:00:00.170Z",
+        "__v": 0
+      },
+      {
+        "_id": "5fbf98fcfeedc679f1625aff",
+        "districts": [
+          "Hefin",
+          "Iorwerth"
+        ],
+        "date": "2020-11-26T12:00:00.157Z",
+        "__v": 0
+      },
+      {
+        "_id": "5fbf8aecfeedc679f1625afe",
+        "districts": [
+          "Amlodd",
+          "Meilyr"
+        ],
+        "date": "2020-11-26T11:00:00.132Z",
+        "__v": 0
+      }
+    ]
+  }  
