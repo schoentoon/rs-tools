@@ -133,6 +133,7 @@ func main() {
 			&ItemDB{},
 			&VoiceOfSeren{},
 			&Araxxor{},
+			&Vorago{},
 		},
 		ItemCache: make(map[int64]string),
 		Pretty:    flag.NArg() == 0, // if we don't have any left over flags we're gonna be interactive
