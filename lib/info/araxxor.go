@@ -1,13 +1,13 @@
 package info
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -20,7 +20,7 @@ type AraxxorPathInfo struct {
 	DaysLeft    int
 }
 
-var daysLeftRegex = regexp.MustCompile(`Days until next rotation: (\d)`)
+var araxxorDaysLeftRegex = regexp.MustCompile(`Days until next rotation: (\d)`)
 
 func AraxxorPath(client *http.Client) (*AraxxorPathInfo, error) {
 	params := url.Values{
@@ -53,7 +53,7 @@ func AraxxorPath(client *http.Client) (*AraxxorPathInfo, error) {
 		return nil, err
 	}
 
-	doc, err := goquery.NewDocumentFromReader(bytes.NewBufferString(wrapper.Parse.Text.Data))
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(wrapper.Parse.Text.Data))
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func AraxxorPath(client *http.Client) (*AraxxorPathInfo, error) {
 
 	doc.Find("th").Each(func(i int, s *goquery.Selection) {
 		if _, ok := s.Attr("colspan"); ok {
-			results := daysLeftRegex.FindStringSubmatch(s.Text())
+			results := araxxorDaysLeftRegex.FindStringSubmatch(s.Text())
 			if len(results) == 2 {
 				out.DaysLeft, err = strconv.Atoi(results[1])
 			}
