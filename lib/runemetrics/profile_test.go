@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -47,4 +48,28 @@ func TestFetchProfile(t *testing.T) {
 
 		assert.Equal(t, res, res1)
 	}
+}
+
+func TestNewAchievementsSince(t *testing.T) {
+	f1, err1 := os.Open("testdata/profile.json")
+	f2, err2 := os.Open("testdata/profile2.json")
+	if !(assert.Nil(t, err1) || assert.Nil(t, err2)) {
+		t.FailNow()
+	}
+	defer f1.Close()
+	defer f2.Close()
+
+	p1, err1 := ParseProfile(f1)
+	p2, err2 := ParseProfile(f2)
+	if !(assert.Nil(t, err1) || assert.Nil(t, err2)) {
+		t.FailNow()
+	}
+
+	new := NewAchievementsSince(p1.Activities, p2.Activities)
+
+	assert.Len(t, new, 6)
+
+	newWrongOrder := NewAchievementsSince(p2.Activities, p1.Activities)
+
+	assert.Equal(t, new, newWrongOrder)
 }
