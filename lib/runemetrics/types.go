@@ -19,19 +19,21 @@ type Profile struct {
 	Skills     []SkillValue `json:"skillvalues"`
 }
 
-type ActivityTimeFormat time.Time
+type ActivityTimeFormat struct {
+	*time.Time
+}
 
 func (at *ActivityTimeFormat) UnmarshalJSON(in []byte) error {
 	t, err := time.Parse(`"02-Jan-2006 15:04"`, string(in))
 	if err != nil {
 		return err
 	}
-	*at = ActivityTimeFormat(t)
+	*at = ActivityTimeFormat{&t}
 	return nil
 }
 
-func (at *ActivityTimeFormat) MarshalJSON() ([]byte, error) {
-	return []byte(time.Time(*at).Format(`"02-Jan-2006 15:04"`)), nil
+func (at ActivityTimeFormat) MarshalJSON() ([]byte, error) {
+	return []byte(at.Format(`"02-Jan-2006 15:04"`)), nil
 }
 
 type Activity struct {

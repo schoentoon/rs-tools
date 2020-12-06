@@ -69,6 +69,15 @@ func TestNewAchievementsSince(t *testing.T) {
 
 	assert.Len(t, new, 6)
 
+	var prev *Activity = nil
+	for _, a := range new {
+		assert.Greater(t, a.Date.Unix(), p1.Activities[0].Date.Unix())
+		if prev != nil {
+			assert.GreaterOrEqual(t, a.Date.Unix(), prev.Date.Unix())
+		}
+		prev = &a
+	}
+
 	newWrongOrder := NewAchievementsSince(p2.Activities, p1.Activities)
 
 	assert.Equal(t, new, newWrongOrder)

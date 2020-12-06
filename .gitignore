@@ -17,4 +17,5 @@ go.sum
 
 # binaries
 rs-cli
+achievementlog
 !cmd/*
