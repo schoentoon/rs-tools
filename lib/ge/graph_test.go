@@ -57,3 +57,13 @@ func TestPriceGraphInvalidTimestamps(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, graph)
 }
+
+func TestPriceGraphOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	ge := Ge{Client: http.DefaultClient}
+
+	_, err := ge.PriceGraph(245)
+
+	assert.Nil(t, err)
+}

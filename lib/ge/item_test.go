@@ -50,3 +50,16 @@ func TestGetItemInvalidJSON(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Nil(t, item)
 }
+
+func TestGetItemOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	ge := Ge{Client: http.DefaultClient}
+
+	item, err := ge.GetItem(245)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, item)
+	assert.Equal(t, item.ID, int64(245))
+	assert.Equal(t, item.Name, "Wine of Zamorak")
+}

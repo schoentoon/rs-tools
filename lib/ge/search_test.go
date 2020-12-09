@@ -52,3 +52,25 @@ func TestSearchInvalidItems(t *testing.T) {
 	assert.NotNil(t, res)
 	assert.Len(t, res, 4)
 }
+
+func TestSearchOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	ge := Ge{
+		Client:    http.DefaultClient,
+		UserAgent: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.0",
+	}
+
+	res, err := ge.SearchItems("wine")
+	assert.Nil(t, err)
+
+	// let's make sure that the item with the name "Wine of Zamorak" is present
+	zamorak := false
+	for _, item := range res {
+		if item.Name == "Wine of Zamorak" {
+			zamorak = true
+		}
+	}
+
+	assert.True(t, zamorak, res)
+}

@@ -74,3 +74,19 @@ func TestPossibleNextVoiceOfSeren(t *testing.T) {
 	assert.Contains(t, res, Meilyr)
 	assert.Contains(t, res, Trahaearn)
 }
+
+func TestVoiceOfSerenOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	_, err := VoiceOfSeren(http.DefaultClient)
+
+	assert.Nil(t, err)
+}
+
+func TestPossibleNewVoiceOfSerenOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	_, err := PossibleNextVoiceOfSeren(http.DefaultClient)
+
+	assert.Nil(t, err)
+}

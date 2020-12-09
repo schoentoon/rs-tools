@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -35,13 +34,7 @@ func parseElvenClan(in string) (ElvenClan, error) {
 }
 
 func VoiceOfSeren(client *http.Client) ([]ElvenClan, error) {
-	params := url.Values{
-		"action":    {"query"},
-		"format":    {"json"},
-		"meta":      {"allmessages"},
-		"ammesages": {"VoS"},
-	}
-	resp, err := client.Get(fmt.Sprintf("https://runescape.wiki/api.php?%s", params.Encode()))
+	resp, err := client.Get("https://runescape.wiki/api.php?action=query&format=json&meta=allmessages&ammessages=VoS")
 	if err != nil {
 		return nil, err
 	}

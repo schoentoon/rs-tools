@@ -27,3 +27,11 @@ func TestAraxxor(t *testing.T) {
 	assert.Equal(t, 3, res.DaysLeft)
 	assert.Equal(t, "I died in the dark, covered in spiders.", res.Description)
 }
+
+func TestAraxxorOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	_, err := AraxxorPath(http.DefaultClient)
+
+	assert.Nil(t, err)
+}

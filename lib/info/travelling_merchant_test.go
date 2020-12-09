@@ -33,3 +33,11 @@ func TestTravellingMerchant(t *testing.T) {
 	assert.Equal(t, res.Products[2].Cost, 1500000)
 	assert.Equal(t, res.Products[3].Cost, 150000)
 }
+
+func TestTravellingMerchantOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	_, err := TravellingMerchant(http.DefaultClient)
+
+	assert.Nil(t, err)
+}

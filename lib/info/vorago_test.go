@@ -24,3 +24,11 @@ func TestVorago(t *testing.T) {
 	assert.Equal(t, "Team Split", res.Rotation)
 	assert.Equal(t, 6, res.DaysLeft)
 }
+
+func TestVoragoOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	_, err := VoragoRotation(http.DefaultClient)
+
+	assert.Nil(t, err)
+}

@@ -50,6 +50,14 @@ func TestFetchProfile(t *testing.T) {
 	}
 }
 
+func TestFetchProfileOnline(t *testing.T) {
+	lib.TestOnline(t)
+
+	_, err := FetchProfile(http.DefaultClient, "Schoentoon")
+
+	assert.Nil(t, err)
+}
+
 func TestNewAchievementsSince(t *testing.T) {
 	f1, err1 := os.Open("testdata/profile.json")
 	f2, err2 := os.Open("testdata/profile2.json")
