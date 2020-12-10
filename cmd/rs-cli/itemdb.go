@@ -1,16 +1,18 @@
 package main
 
 import (
-	"errors"
 	"io"
 	"net/http"
 	"os"
 
+	"github.com/adrg/xdg"
 	"github.com/c-bata/go-prompt"
 	"github.com/vbauerster/mpb/v5"
 	"github.com/vbauerster/mpb/v5/decor"
 	"gitlab.com/schoentoon/rs-tools/lib/ge/itemdb"
 )
+
+const ITEMDB_LOCATION = "rscli/itemdb.ljson"
 
 type ItemDB struct {
 }
@@ -24,11 +26,12 @@ func (d *ItemDB) Autocomplete(app *Application, in prompt.Document) []prompt.Sug
 func (d *ItemDB) WantSpinner() bool { return false }
 
 func (d *ItemDB) Execute(app *Application, argv string, out io.Writer) error {
-	if argv == "" {
-		return errors.New("You HAVE to provide a filename to save the result to")
+	filename, err := xdg.DataFile(ITEMDB_LOCATION)
+	if err != nil {
+		return err
 	}
 
-	f, err := os.OpenFile(argv, os.O_CREATE|os.O_RDWR, 0644)
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		return err
 	}

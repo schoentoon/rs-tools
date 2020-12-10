@@ -9,10 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/adrg/xdg"
 	"github.com/briandowns/spinner"
 	"github.com/c-bata/go-prompt"
 	"github.com/c-bata/go-prompt/completer"
 	"gitlab.com/schoentoon/rs-tools/lib/ge"
+	"gitlab.com/schoentoon/rs-tools/lib/ge/itemdb"
 )
 
 type Command interface {
@@ -116,6 +118,25 @@ func (a *Application) executor(in string) {
 	}
 }
 
+func readItemDB(ge *ge.Ge) ge.SearchItemInterface {
+	filename, err := xdg.DataFile(ITEMDB_LOCATION)
+	if err != nil {
+		return ge
+	}
+	f, err := os.OpenFile(filename, os.O_RDONLY, 0644)
+	if err != nil {
+		return ge
+	}
+	defer f.Close()
+
+	out, err := itemdb.NewFromReader(f)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return ge
+	}
+	return out
+}
+
 func main() {
 	flag.Parse()
 	ge := &ge.Ge{
@@ -139,7 +160,7 @@ func main() {
 		Pretty:    flag.NArg() == 0, // if we don't have any left over flags we're gonna be interactive
 		Client:    http.DefaultClient,
 		Ge:        ge,
-		Search:    ge,
+		Search:    readItemDB(ge), // if we previously ran an item db download we'll use that, otherwise we scrape the rs ge website
 	}
 
 	if flag.NArg() > 0 {
