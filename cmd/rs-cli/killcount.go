@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/c-bata/go-prompt"
@@ -19,7 +21,24 @@ func (k *Killcount) Name() string { return "killcount" }
 func (k *Killcount) Description() string { return "Calculate the killcounts based on stored alogs" }
 
 func (k *Killcount) Autocomplete(app *Application, in prompt.Document) []prompt.Suggest {
-	return nil
+	path, err := xdg.DataFile("rscli/alog")
+	if err != nil {
+		return nil
+	}
+	files, err := filepath.Glob(fmt.Sprintf("%s/*.ljson", path))
+	if err != nil {
+		return nil
+	}
+
+	w := in.GetWordBeforeCursor()
+	out := make([]prompt.Suggest, 0, len(files))
+	for _, file := range files {
+		file = strings.TrimSuffix(file, ".ljson")
+		file = filepath.Base(file)
+		out = append(out, prompt.Suggest{Text: file})
+	}
+
+	return prompt.FilterHasPrefix(out, w, true)
 }
 
 func (k *Killcount) WantSpinner() bool { return true }
