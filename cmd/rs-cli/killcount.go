@@ -91,8 +91,7 @@ func (k *Killcount) Execute(app *Application, argv string, out io.Writer) error 
 	for boss, kills := range k.KC {
 		fmt.Fprintf(out, "%s: %d", boss, kills[0])
 		if kills[1] > 0 {
-			red := color.New(color.FgRed).FprintfFunc()
-			red(out, " (%d)", kills[1])
+			color.New(color.FgRed).Fprintf(out, " (%d)", kills[1])
 		}
 		fmt.Fprintf(out, "\n")
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/c-bata/go-prompt"
+	"github.com/fatih/color"
 	"gitlab.com/schoentoon/rs-tools/lib/runemetrics"
 )
 
@@ -72,6 +73,9 @@ func (a *Alog) Execute(app *Application, argv string, out io.Writer) error {
 	newer := profile.Activities
 	if len(existing) > 0 {
 		newer = runemetrics.NewAchievementsSince(existing, profile.Activities)
+		if len(newer) >= 20 {
+			color.New(color.FgRed).Fprintf(out, "20 new activities, likely missing some in between!\n")
+		}
 	}
 
 	fout, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0600)
