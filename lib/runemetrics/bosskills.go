@@ -8,14 +8,23 @@ import (
 )
 
 type BossKills struct {
-	Boss   string
-	Amount int
+	Boss     string
+	Amount   int
+	Hardmode bool
 }
 
 var iKilledRegex = regexp.MustCompile(`I killed (\d*) ([^\.]+)\.`)
 var iDefeatedRegex = regexp.MustCompile(`I defeated ([^\d]+) (\d) times\.`)
 
 func ParseBossKills(activity Activity) (out *BossKills, err error) {
+	// some post processing to always strip off whitespaces and some other details
+	defer func() {
+		if out != nil {
+			out.Boss = strings.Trim(out.Boss, " ")
+			out.Boss = strings.TrimPrefix(out.Boss, "the ")
+		}
+	}()
+
 	results := iKilledRegex.FindStringSubmatch(activity.Text)
 	if len(results) > 0 {
 		out = &BossKills{
@@ -30,6 +39,14 @@ func ParseBossKills(activity Activity) (out *BossKills, err error) {
 				return nil, err
 			}
 		}
+
+		// All the GWD1 bosses that use the tag (Hard mode) at least are listed as "I killed"
+		// Need to investigate whether this is the same for other bosses
+		if strings.Contains(out.Boss, "(Hard mode)") {
+			out.Hardmode = true
+			out.Boss = strings.Replace(out.Boss, "(Hard mode)", "", 1)
+		}
+
 		return
 	}
 

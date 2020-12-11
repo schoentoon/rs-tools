@@ -24,7 +24,7 @@ func TestBossKillsParsing(t *testing.T) {
 		},
 		{
 			Activity:    Activity{Details: "I defeated the Twin Furies 3 times, all servants of Zamorak.", Text: "I defeated the Twin Furies 3 times."},
-			BossKills:   BossKills{Boss: "the Twin Furies", Amount: 3},
+			BossKills:   BossKills{Boss: "Twin Furies", Amount: 3},
 			ExpectError: false,
 		},
 		{
@@ -34,7 +34,7 @@ func TestBossKillsParsing(t *testing.T) {
 		},
 		{
 			Activity:    Activity{Details: "I killed 31 servants of the god Zamorak, all called K'ril Tsutsaroth. (Hard mode)", Text: "I killed 31 (Hard mode) K'ril Tsutsaroths."},
-			BossKills:   BossKills{Boss: "(Hard mode) K'ril Tsutsaroth", Amount: 31},
+			BossKills:   BossKills{Boss: "K'ril Tsutsaroth", Amount: 31, Hardmode: true},
 			ExpectError: false,
 		},
 		{
@@ -52,6 +52,7 @@ func TestBossKillsParsing(t *testing.T) {
 		} else if assert.NotNil(t, out, c) {
 			assert.Equal(t, c.BossKills.Boss, out.Boss, c)
 			assert.Equal(t, c.BossKills.Amount, out.Amount, c)
+			assert.Equal(t, c.BossKills.Hardmode, out.Hardmode, c)
 		}
 	}
 }
