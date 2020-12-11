@@ -33,6 +33,9 @@ func (at *ActivityTimeFormat) UnmarshalJSON(in []byte) error {
 }
 
 func (at ActivityTimeFormat) MarshalJSON() ([]byte, error) {
+	if at.Time == nil {
+		return []byte(time.Now().Format(`"02-Jan-2006 15:04"`)), nil
+	}
 	return []byte(at.Format(`"02-Jan-2006 15:04"`)), nil
 }
 
