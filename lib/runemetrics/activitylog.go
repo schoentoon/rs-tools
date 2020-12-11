@@ -39,3 +39,24 @@ func ReadActivities(r io.Reader) ([]Activity, error) {
 
 	return out, nil
 }
+
+func IterateActivities(r io.Reader, iterator ActivityIterator) error {
+	decoder := json.NewDecoder(r)
+
+	for decoder.More() {
+		activity := &Activity{}
+		err := decoder.Decode(activity)
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		err = iterator.HandleActivity(*activity)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
