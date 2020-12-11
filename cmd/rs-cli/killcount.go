@@ -9,11 +9,16 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/c-bata/go-prompt"
+	"github.com/fatih/color"
 	"gitlab.com/schoentoon/rs-tools/lib/runemetrics"
 )
 
 type Killcount struct {
-	KC map[string]int
+	// the string will be the name of the boss, the []int will always only have 2 entries.
+	// the first entry will be amount of kills in normal mode, second is amount of kills in hard mode
+	// challenge mode whatever they call it for a specific boss, for this reason it could also be
+	// completely ignored
+	KC map[string][]int
 }
 
 func (k *Killcount) Name() string { return "killcount" }
@@ -48,7 +53,14 @@ func (k *Killcount) HandleActivity(activity runemetrics.Activity) error {
 	if err != nil { // error really just means it's probably not a bosskill, so we ignore it
 		return nil
 	}
-	k.KC[kill.Boss] += kill.Amount
+	if k.KC[kill.Boss] == nil {
+		k.KC[kill.Boss] = []int{0, 0}
+	}
+	if kill.Hardmode {
+		k.KC[kill.Boss][1] += kill.Amount
+	} else {
+		k.KC[kill.Boss][0] += kill.Amount
+	}
 	return nil
 }
 
@@ -69,15 +81,20 @@ func (k *Killcount) Execute(app *Application, argv string, out io.Writer) error 
 	}
 	defer f.Close()
 
-	k.KC = make(map[string]int)
+	k.KC = make(map[string][]int)
 
 	err = runemetrics.IterateActivities(f, k)
 	if err != nil {
 		return err
 	}
 
-	for boss, amount := range k.KC {
-		fmt.Fprintf(out, "%s: %d\n", boss, amount)
+	for boss, kills := range k.KC {
+		fmt.Fprintf(out, "%s: %d", boss, kills[0])
+		if kills[1] > 0 {
+			red := color.New(color.FgRed).FprintfFunc()
+			red(out, " (%d)", kills[1])
+		}
+		fmt.Fprintf(out, "\n")
 	}
 
 	return nil
