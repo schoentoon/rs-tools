@@ -10,10 +10,10 @@ import (
 )
 
 func TestWriteActivities(t *testing.T) {
-	expected := `{"date":"01-Jan-1970 01:00","details":"I killed 4 Helwyrs, limb tearing hunters.","text":"I killed 4 Helwyrs."}
-{"date":"01-Jan-1970 01:00","details":"I killed 3 Gregorovics, all blade wielding terrors.","text":"I killed 3 Gregorovics."}
+	expected := `{"date":"01-Jan-1970 00:00","details":"I killed 4 Helwyrs, limb tearing hunters.","text":"I killed 4 Helwyrs."}
+{"date":"01-Jan-1970 00:00","details":"I killed 3 Gregorovics, all blade wielding terrors.","text":"I killed 3 Gregorovics."}
 `
-	zero := time.Unix(0, 0)
+	zero := time.Unix(0, 0).UTC()
 	in := []Activity{
 		{Date: ActivityTimeFormat{Time: &zero}, Details: "I killed 4 Helwyrs, limb tearing hunters.", Text: "I killed 4 Helwyrs."},
 		{Date: ActivityTimeFormat{Time: &zero}, Details: "I killed 3 Gregorovics, all blade wielding terrors.", Text: "I killed 3 Gregorovics."},
