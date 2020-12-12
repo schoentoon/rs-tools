@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/c-bata/go-prompt"
+	"github.com/olekukonko/tablewriter"
 )
 
 type Search struct {
@@ -24,9 +25,13 @@ func (s *Search) Execute(app *Application, argv string, out io.Writer) error {
 		return err
 	}
 
+	table := tablewriter.NewWriter(out)
+	table.SetHeader([]string{"ID", "Item"})
+	defer table.Render()
+
 	for _, item := range items {
 		app.ItemCache[item.ID] = item.Name
-		fmt.Fprintf(out, "%s - %d\n", item.Name, item.ID)
+		table.Append([]string{fmt.Sprintf("%d", item.ID), item.Name})
 	}
 
 	return nil

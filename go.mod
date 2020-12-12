@@ -10,6 +10,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/fatih/color v1.7.0
 	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/olekukonko/tablewriter v0.0.4
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect

@@ -9,7 +9,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/c-bata/go-prompt"
-	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter"
 	"gitlab.com/schoentoon/rs-tools/lib/runemetrics"
 )
 
@@ -88,12 +88,12 @@ func (k *Killcount) Execute(app *Application, argv string, out io.Writer) error 
 		return err
 	}
 
+	table := tablewriter.NewWriter(out)
+	table.SetHeader([]string{"Boss", "Kills", "HM"})
+	defer table.Render()
+
 	for boss, kills := range k.KC {
-		fmt.Fprintf(out, "%s: %d", boss, kills[0])
-		if kills[1] > 0 {
-			color.New(color.FgRed).Fprintf(out, " (%d)", kills[1])
-		}
-		fmt.Fprintf(out, "\n")
+		table.Append([]string{boss, fmt.Sprintf("%d", kills[0]), fmt.Sprintf("%d", kills[1])})
 	}
 
 	return nil
