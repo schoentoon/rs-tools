@@ -34,6 +34,11 @@ func ParseProfile(r io.Reader) (*Profile, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if out.Err != "" {
+		return nil, errors.New(out.Err)
+	}
+
 	return out, nil
 }
 

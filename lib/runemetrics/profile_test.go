@@ -90,3 +90,20 @@ func TestNewAchievementsSince(t *testing.T) {
 
 	assert.Equal(t, new, newWrongOrder)
 }
+
+func TestNoProfile(t *testing.T) {
+	client := lib.NewTestClient(func(req *http.Request) (int, string) {
+		assert.Contains(t, req.URL.String(), "Schoentoon")
+
+		data, err := ioutil.ReadFile("testdata/no_profile.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return 200, string(data)
+	})
+
+	res, err := FetchProfile(client, "Schoentoon")
+
+	assert.Nil(t, res)
+	assert.Error(t, err)
+}

@@ -17,6 +17,8 @@ type Profile struct {
 
 	Activities []Activity   `json:"activities"`
 	Skills     []SkillValue `json:"skillvalues"`
+
+	Err string `json:"error"`
 }
 
 type ActivityTimeFormat struct {
