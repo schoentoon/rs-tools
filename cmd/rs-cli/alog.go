@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/adrg/xdg"
 	"github.com/c-bata/go-prompt"
-	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter"
 	"gitlab.com/schoentoon/rs-tools/lib/runemetrics"
 )
 
@@ -19,7 +17,7 @@ type Alog struct {
 
 func (a *Alog) Name() string { return "alog" }
 
-func (a *Alog) Description() string { return "Update the adventure log of a certain user" }
+func (a *Alog) Description() string { return "Retrieve the adventure log of a specified user" }
 
 func (a *Alog) Autocomplete(app *Application, in prompt.Document) []prompt.Suggest {
 	path, err := xdg.DataFile("rscli/alog")
@@ -50,56 +48,19 @@ func (a *Alog) Execute(app *Application, argv string, out io.Writer) error {
 		return fmt.Errorf("You need to specify a valid username")
 	}
 
-	filename, err := xdg.DataFile(fmt.Sprintf("rscli/alog/%s.ljson", username))
-	if err != nil {
-		return err
-	}
-
-	err = os.MkdirAll(filepath.Base(filename), 0600)
-	if err != nil {
-		return err
-	}
-
 	profile, err := runemetrics.FetchProfile(app.Client, username)
 	if err != nil {
 		return err
 	}
 
-	existing, err := a.readOutputFile(filename)
-	if err != nil {
-		return err
+	table := tablewriter.NewWriter(out)
+	table.SetAutoWrapText(false)
+	table.SetHeader([]string{"When", "Activity"})
+	defer table.Render()
+
+	for _, activity := range profile.Activities {
+		table.Append([]string{activity.Date.Local().Format("02-Jan-2006 15:04"), activity.Details})
 	}
 
-	newer := profile.Activities
-	if len(existing) > 0 {
-		newer = runemetrics.NewAchievementsSince(existing, profile.Activities)
-		if len(newer) >= 20 {
-			color.New(color.FgRed).Fprintf(out, "20 new activities, likely missing some in between!\n")
-		}
-	}
-
-	fout, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0600)
-	if err != nil {
-		return err
-	}
-	defer fout.Close()
-
-	sort.Slice(newer, func(i, j int) bool { return newer[i].Date.Unix() < newer[j].Date.Unix() })
-
-	return runemetrics.WriteActivities(fout, newer)
-}
-
-func (a *Alog) readOutputFile(filename string) ([]runemetrics.Activity, error) {
-	out := []runemetrics.Activity{}
-
-	f, err := os.Open(filename)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return out, nil
-		}
-		return nil, err
-	}
-	defer f.Close()
-
-	return runemetrics.ReadActivities(f)
+	return nil
 }

@@ -155,6 +155,7 @@ func main() {
 			&VoiceOfSeren{},
 			&Araxxor{},
 			&Vorago{},
+			&UpdateAlog{},
 			&Alog{},
 			&Killcount{},
 		},
