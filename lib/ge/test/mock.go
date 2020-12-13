@@ -12,22 +12,20 @@ import (
 )
 
 type TestingGe struct {
-	T                *testing.T
-	NextError        chan error
-	NextGraph        chan *ge.Graph
-	NextItem         chan *ge.Item
-	NextSearchResult chan []ge.SearchResult
-	SkipErrors       int
+	T          *testing.T
+	NextError  chan error
+	NextGraph  chan *ge.Graph
+	NextItem   chan *ge.Item
+	SkipErrors int
 }
 
 func MockGe(t *testing.T) *TestingGe {
 	return &TestingGe{
-		T:                t,
-		NextError:        make(chan error, 8),
-		NextGraph:        make(chan *ge.Graph, 8),
-		NextItem:         make(chan *ge.Item, 8),
-		NextSearchResult: make(chan []ge.SearchResult, 8),
-		SkipErrors:       0,
+		T:          t,
+		NextError:  make(chan error, 8),
+		NextGraph:  make(chan *ge.Graph, 8),
+		NextItem:   make(chan *ge.Item, 8),
+		SkipErrors: 0,
 	}
 }
 
@@ -40,9 +38,6 @@ func (t *TestingGe) Close() {
 	}
 	if len(t.NextItem) > 0 {
 		assert.Fail(t.T, "Still GetItem calls planned that didn't happen")
-	}
-	if len(t.NextSearchResult) > 0 {
-		assert.Fail(t.T, "Still SearchItems calls planned that didn't happen")
 	}
 }
 
@@ -72,18 +67,4 @@ func (t *TestingGe) GetItem(itemID int64) (*ge.Item, error) {
 		assert.FailNow(t.T, fmt.Sprintf("Unexpected call: NextItem(%d)", itemID))
 	}
 	return <-t.NextItem, nil
-}
-
-func (t *TestingGe) SearchItems(query string) ([]ge.SearchResult, error) {
-	if len(t.NextError) > 0 {
-		if t.SkipErrors > 0 {
-			t.SkipErrors--
-		} else {
-			return nil, <-t.NextError
-		}
-	}
-	if len(t.NextSearchResult) == 0 {
-		assert.FailNow(t.T, fmt.Sprintf("Unexpected call: NextSearchResult(%s)", query))
-	}
-	return <-t.NextSearchResult, nil
 }

@@ -10,12 +10,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type SearchResult struct {
-	ItemID int64
-	Name   string
-	Image  string
-}
-
 func (g *Ge) SearchItems(query string) ([]Item, error) {
 	req, err := http.NewRequest("POST", "https://secure.runescape.com/m=itemdb_rs/a=13/results", strings.NewReader(url.Values{"query": {query}}.Encode()))
 	if err != nil {
@@ -69,8 +63,4 @@ func (g *Ge) SearchItems(query string) ([]Item, error) {
 	})
 
 	return out, nil
-}
-
-func (s *SearchResult) Graph(ge GeInterface) (*Graph, error) {
-	return ge.PriceGraph(s.ItemID)
 }
