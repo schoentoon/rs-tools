@@ -1,71 +1,55 @@
 package main
 
 import (
-	"io"
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/adrg/xdg"
-	"github.com/c-bata/go-prompt"
-	"github.com/vbauerster/mpb/v5"
-	"github.com/vbauerster/mpb/v5/decor"
+	"github.com/spf13/cobra"
+	"gitlab.com/schoentoon/rs-tools/lib/ge"
 	"gitlab.com/schoentoon/rs-tools/lib/ge/itemdb"
 )
 
 const ITEMDB_LOCATION = "rscli/itemdb.ljson"
 
-type ItemDB struct {
-}
-
-func (d *ItemDB) Name() string { return "download-itemdb" }
-
-func (d *ItemDB) Description() string { return "Download and fill a local copy of the item database" }
-
-func (d *ItemDB) Autocomplete(app *Application, in prompt.Document) []prompt.Suggest { return nil }
-
-func (d *ItemDB) WantSpinner() bool { return false }
-
-func (d *ItemDB) Execute(app *Application, argv string, out io.Writer) error {
+func readItemDB() ge.SearchItemInterface {
 	filename, err := xdg.DataFile(ITEMDB_LOCATION)
 	if err != nil {
-		return err
+		return geApi()
 	}
-
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0644)
+	f, err := os.OpenFile(filename, os.O_RDONLY, 0644)
 	if err != nil {
-		return err
+		return geApi()
 	}
 	defer f.Close()
 
-	db := itemdb.New()
-	db.Writer = f
-
-	p := mpb.New(mpb.WithWidth(64), mpb.WithOutput(out))
-	tasks := p.AddBar(int64(0),
-		mpb.PrependDecorators(
-			decor.CountersNoUnit("%d / %d "),
-			decor.Percentage(),
-		),
-		mpb.AppendDecorators(
-			decor.OnComplete(
-				decor.AverageETA(decor.ET_STYLE_MMSS, decor.WC{W: 4}), "done",
-			),
-		),
-	)
-
-	progCh := make(chan *itemdb.Progress, 1)
-	errCh := make(chan error, 1)
-
-	go func() {
-		errCh <- db.Update(http.DefaultClient, 1, progCh)
-	}()
-
-	for progress := range progCh {
-		tasks.SetTotal(progress.Tasks, progress.Tasks == progress.Finished)
-		tasks.SetCurrent(progress.Finished)
+	out, err := itemdb.NewFromReader(f)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		return geApi()
 	}
+	return out
+}
 
-	p.Wait()
+func geApi() *ge.Ge {
+	return &ge.Ge{
+		Client: http.DefaultClient,
+		// It's not very nice to 'abuse' the firefox user agent here.. but for the only not really api
+		// call they have on the ge website a captcha tended to get in the way sometimes. on first sight
+		// switching to this user agent seemed to work around it, nasty but it works I guess
+		// just don't call Search too often because of this really
+		UserAgent: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.0",
+	}
+}
 
-	return <-errCh
+var itemDBCmd = &cobra.Command{
+	Use:   "itemdb",
+	Short: "Interact with a local copy of the item database",
+}
+
+func init() {
+	itemDBCmd.AddCommand(itemDBDownloadCmd)
+	itemDBCmd.AddCommand(itemDBSearchCmd)
+	itemDBCmd.AddCommand(itemDBPriceCmd)
 }

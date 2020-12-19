@@ -5,17 +5,18 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/adrg/xdg"
-	"github.com/olekukonko/tablewriter"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"gitlab.com/schoentoon/rs-tools/lib/runemetrics"
 )
 
-var alogCmd = &cobra.Command{
-	Use:   "alog",
-	Short: "Retrieve the adventure log of a specified user",
+var alogUpdate = &cobra.Command{
+	Use:   "update",
+	Short: "Updates the adventure log of a specified user in a local copy",
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
@@ -51,24 +52,57 @@ var alogCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		username := args[0]
 
+		filename, err := xdg.DataFile(fmt.Sprintf("rscli/alog/%s.ljson", username))
+		if err != nil {
+			return err
+		}
+
+		err = os.MkdirAll(filepath.Base(filename), 0600)
+		if err != nil {
+			return err
+		}
+
 		profile, err := runemetrics.FetchProfile(http.DefaultClient, username)
 		if err != nil {
 			return err
 		}
 
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"When", "Activity"})
-		defer table.Render()
-
-		for _, activity := range profile.Activities {
-			table.Append([]string{activity.Date.Local().Format("02-Jan-2006 15:04"), activity.Details})
+		existing, err := readOutputFile(filename)
+		if err != nil {
+			return err
 		}
-		return nil
+
+		newer := profile.Activities
+		if len(existing) > 0 {
+			newer = runemetrics.NewAchievementsSince(existing, profile.Activities)
+			if len(newer) >= 20 {
+				color.New(color.FgRed).Printf("20 new activities, likely missing some in between!\n")
+			}
+		}
+
+		fout, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0600)
+		if err != nil {
+			return err
+		}
+		defer fout.Close()
+
+		sort.Slice(newer, func(i, j int) bool { return newer[i].Date.Unix() < newer[j].Date.Unix() })
+
+		return runemetrics.WriteActivities(fout, newer)
 	},
 }
 
-func init() {
-	alogCmd.AddCommand(alogUpdate)
-	alogCmd.AddCommand(alogKillCount)
+func readOutputFile(filename string) ([]runemetrics.Activity, error) {
+	out := []runemetrics.Activity{}
+
+	f, err := os.Open(filename)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return out, nil
+		}
+		return nil, err
+	}
+	defer f.Close()
+
+	return runemetrics.ReadActivities(f)
 }

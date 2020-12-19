@@ -2,43 +2,36 @@ package main
 
 import (
 	"fmt"
-	"io"
+	"net/http"
 
-	"github.com/c-bata/go-prompt"
+	"github.com/spf13/cobra"
 	"gitlab.com/schoentoon/rs-tools/lib/info"
 )
 
-type Araxxor struct {
-}
+var araxxorCmd = &cobra.Command{
+	Use:   "araxxor",
+	Short: "Retrieve the current open paths of araxxor",
 
-func (a *Araxxor) Name() string { return "araxxor" }
-
-func (a *Araxxor) Description() string { return "Retrieve the current open paths of araxxor" }
-
-func (a *Araxxor) Autocomplete(app *Application, in prompt.Document) []prompt.Suggest {
-	return nil
-}
-
-func (a *Araxxor) WantSpinner() bool { return true }
-
-func (a *Araxxor) Execute(app *Application, argv string, out io.Writer) error {
-	res, err := info.AraxxorPath(app.Client)
-	if err != nil {
-		return err
-	}
-
-	openOrClosed := func(b bool) string {
-		if b {
-			return "open"
+	Args: cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		res, err := info.AraxxorPath(http.DefaultClient)
+		if err != nil {
+			return err
 		}
-		return "closed"
-	}
 
-	fmt.Fprintf(out, "%s\n", res.Description)
-	fmt.Fprintf(out, "Minions path is %s\n", openOrClosed(res.Minions))
-	fmt.Fprintf(out, "Acid path is %s\n", openOrClosed(res.Acid))
-	fmt.Fprintf(out, "Darkness path is %s\n", openOrClosed(res.Darkness))
-	fmt.Fprintf(out, "This rotation will change in %d days.\n", res.DaysLeft)
+		openOrClosed := func(b bool) string {
+			if b {
+				return "open"
+			}
+			return "closed"
+		}
 
-	return nil
+		fmt.Printf("%s\n", res.Description)
+		fmt.Printf("Minions path is %s\n", openOrClosed(res.Minions))
+		fmt.Printf("Acid path is %s\n", openOrClosed(res.Acid))
+		fmt.Printf("Darkness path is %s\n", openOrClosed(res.Darkness))
+		fmt.Printf("This rotation will change in %d days.\n", res.DaysLeft)
+
+		return nil
+	},
 }
