@@ -13,6 +13,7 @@ func main() {
 	rootCmd.AddCommand(itemDBCmd)
 	rootCmd.AddCommand(voiceOfSerenCmd)
 	rootCmd.AddCommand(voragoCmd)
+	rootCmd.AddCommand(spotlightCmd)
 
 	err := rootCmd.Execute()
 	if err != nil {

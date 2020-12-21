@@ -39,7 +39,7 @@ func geApi() *ge.Ge {
 		// call they have on the ge website a captcha tended to get in the way sometimes. on first sight
 		// switching to this user agent seemed to work around it, nasty but it works I guess
 		// just don't call Search too often because of this really
-		UserAgent: "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:82.0) Gecko/20100101 Firefox/82.0",
+		UserAgent: "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
 	}
 }
 
