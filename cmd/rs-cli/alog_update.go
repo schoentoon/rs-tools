@@ -57,7 +57,7 @@ var alogUpdate = &cobra.Command{
 			return err
 		}
 
-		err = os.MkdirAll(filepath.Base(filename), 0600)
+		err = os.MkdirAll(filepath.Dir(filename), 0600)
 		if err != nil {
 			return err
 		}
