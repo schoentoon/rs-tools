@@ -62,7 +62,7 @@ var alogClueScrolls = &cobra.Command{
 		defer f.Close()
 
 		c := &ClueScroll{
-			Difficulties: make(map[string]int),
+			Difficulties: make(map[runemetrics.ClueDifficulty]int),
 		}
 
 		err = runemetrics.IterateActivities(f, c)
@@ -75,7 +75,7 @@ var alogClueScrolls = &cobra.Command{
 		defer table.Render()
 
 		for difficulty, amount := range c.Difficulties {
-			table.Append([]string{difficulty, fmt.Sprintf("%d", amount)})
+			table.Append([]string{difficulty.String(), fmt.Sprintf("%d", amount)})
 		}
 
 		return nil
@@ -83,7 +83,7 @@ var alogClueScrolls = &cobra.Command{
 }
 
 type ClueScroll struct {
-	Difficulties map[string]int
+	Difficulties map[runemetrics.ClueDifficulty]int
 }
 
 func (c *ClueScroll) HandleActivity(activity runemetrics.Activity) error {
