@@ -14,12 +14,12 @@ func TestClueScroll(t *testing.T) {
 	}{
 		{
 			Activity:    Activity{Details: "I have completed a master treasure trail.   ", Text: "Master treasure trail completed."},
-			ClueScroll:  ClueScroll{Difficulty: "master"},
+			ClueScroll:  ClueScroll{Difficulty: Master},
 			ExpectError: false,
 		},
 		{
 			Activity:    Activity{Details: "I have completed a master treasure trail. I got an Ice dye out of it.", Text: "Master treasure trail completed."},
-			ClueScroll:  ClueScroll{Difficulty: "master", Loot: "an Ice dye"},
+			ClueScroll:  ClueScroll{Difficulty: Master, Loot: "an Ice dye"},
 			ExpectError: false,
 		},
 		{
@@ -28,8 +28,12 @@ func TestClueScroll(t *testing.T) {
 		},
 		{
 			Activity:    Activity{Details: "I have completed an elite treasure trail.   ", Text: "Elite treasure trail completed."},
-			ClueScroll:  ClueScroll{Difficulty: "elite"},
+			ClueScroll:  ClueScroll{Difficulty: Elite},
 			ExpectError: false,
+		},
+		{
+			Activity:    Activity{Details: "I have completed an impossible treasure trail.   ", Text: "Elite treasure trail completed."},
+			ExpectError: true,
 		},
 	}
 

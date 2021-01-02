@@ -18,3 +18,4 @@ go.sum
 # binaries
 rs-cli
 !cmd/*
+*_string.go
