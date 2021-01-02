@@ -41,6 +41,11 @@ func TestBossKillsParsing(t *testing.T) {
 			Activity:    Activity{Details: "After killing a Gorvek and Vindicta, it dropped a Crest of Zaros.", Text: "I found a Crest of Zaros"},
 			ExpectError: true,
 		},
+		{
+			Activity:    Activity{Details: "I defeated many waves of TokHaar, before vanquishing the mighty Har'Aken and conquering the Fight Kiln.", Text: "Completed the Fight Kiln"},
+			BossKills:   BossKills{Boss: "Har'Aken", Amount: 1},
+			ExpectError: false,
+		},
 	}
 
 	for _, c := range cases {

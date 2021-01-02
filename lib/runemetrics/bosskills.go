@@ -15,8 +15,19 @@ type BossKills struct {
 
 var iKilledRegex = regexp.MustCompile(`I killed (\d*) ([^\.]+)\.`)
 var iDefeatedRegex = regexp.MustCompile(`I defeated ([^\d]+) (\d) times\.`)
+var fightKiln = "Completed the Fight Kiln"
 
 func ParseBossKills(activity Activity) (out *BossKills, err error) {
+	// Har'Aken being a sort of minigame means it has it's own activity log text
+	// so we have a special case checking for that.
+	if activity.Text == fightKiln {
+		return &BossKills{
+			Boss:     "Har'Aken",
+			Amount:   1,
+			Hardmode: false,
+		}, nil
+	}
+
 	// some post processing to always strip off whitespaces and some other details
 	defer func() {
 		if out != nil {
