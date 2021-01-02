@@ -23,13 +23,14 @@ func TestMinigames(t *testing.T) {
 
 	assert.Nil(t, err)
 
+	year := time.Now().Year()
 	assert.Equal(t, "The Great Orb Project", res.Current)
 	assert.Len(t, res.Schedule, 26)
-	assert.Equal(t, res.Schedule[time.Date(2020, time.December, 23, 0, 0, 0, 0, time.UTC)], "Flash Powder Factory", res.Schedule)
-	assert.Equal(t, res.Schedule[time.Date(2020, time.December, 26, 0, 0, 0, 0, time.UTC)], "Castle Wars", res.Schedule)
-	assert.Equal(t, res.Schedule[time.Date(2020, time.December, 29, 0, 0, 0, 0, time.UTC)], "Stealing Creation", res.Schedule)
-	assert.Equal(t, res.Schedule[time.Date(2021, time.January, 1, 0, 0, 0, 0, time.UTC)], "Cabbage Facepunch Bonanza", res.Schedule)
-	assert.Equal(t, res.Schedule[time.Date(2021, time.January, 4, 0, 0, 0, 0, time.UTC)], "Heist", res.Schedule)
+	assert.Equal(t, res.Schedule[time.Date(year, time.December, 23, 0, 0, 0, 0, time.UTC)], "Flash Powder Factory", res.Schedule)
+	assert.Equal(t, res.Schedule[time.Date(year, time.December, 26, 0, 0, 0, 0, time.UTC)], "Castle Wars", res.Schedule)
+	assert.Equal(t, res.Schedule[time.Date(year, time.December, 29, 0, 0, 0, 0, time.UTC)], "Stealing Creation", res.Schedule)
+	assert.Equal(t, res.Schedule[time.Date(year+1, time.January, 1, 0, 0, 0, 0, time.UTC)], "Cabbage Facepunch Bonanza", res.Schedule)
+	assert.Equal(t, res.Schedule[time.Date(year+1, time.January, 4, 0, 0, 0, 0, time.UTC)], "Heist", res.Schedule)
 
 	prev := time.Time{}
 
