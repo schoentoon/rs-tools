@@ -46,6 +46,16 @@ func TestBossKillsParsing(t *testing.T) {
 			BossKills:   BossKills{Boss: "Har'Aken", Amount: 1},
 			ExpectError: false,
 		},
+		{
+			Activity:    Activity{Details: "I killed  the Magister, the holder of the Crossing.", Text: "I killed  the Magister."},
+			BossKills:   BossKills{Boss: "Magister", Amount: 1},
+			ExpectError: false,
+		},
+		{
+			Activity:    Activity{Details: "I killed 9 Magisters, the unkillable holder of the Crossing.", Text: "I killed 9 Magisters."},
+			BossKills:   BossKills{Boss: "Magister", Amount: 9},
+			ExpectError: false,
+		},
 	}
 
 	for _, c := range cases {
