@@ -26,6 +26,11 @@ func TestClueScroll(t *testing.T) {
 			Activity:    Activity{Details: "I killed 9 Magisters, the unkillable holder of the Crossing.", Text: "I killed 9 Magisters."},
 			ExpectError: true,
 		},
+		{
+			Activity:    Activity{Details: "I have completed an elite treasure trail.   ", Text: "Elite treasure trail completed."},
+			ClueScroll:  ClueScroll{Difficulty: "elite"},
+			ExpectError: false,
+		},
 	}
 
 	for _, c := range cases {

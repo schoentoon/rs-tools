@@ -10,7 +10,7 @@ type ClueScroll struct {
 	Loot       string // This is going to be empty the majority of the time
 }
 
-var iCompletedClue = regexp.MustCompile(`I have completed a ([^ ]*) treasure trail\.[ +](I got ([a-zA-Z ]+) out of it\.|)`)
+var iCompletedClue = regexp.MustCompile(`I have completed an? ([^ ]*) treasure trail\.[ +](I got ([a-zA-Z ]+) out of it\.|)`)
 
 func ParseClueScroll(activity Activity) (*ClueScroll, error) {
 	results := iCompletedClue.FindStringSubmatch(activity.Details)

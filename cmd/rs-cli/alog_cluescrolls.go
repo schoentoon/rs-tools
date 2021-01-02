@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,9 +12,9 @@ import (
 	"gitlab.com/schoentoon/rs-tools/lib/runemetrics"
 )
 
-var alogCmd = &cobra.Command{
-	Use:   "alog",
-	Short: "Retrieve the adventure log of a specified user",
+var alogClueScrolls = &cobra.Command{
+	Use:   "cluescrolls",
+	Short: "Calculate amount of clue scrolls done",
 
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
@@ -51,25 +50,47 @@ var alogCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		username := args[0]
 
-		profile, err := runemetrics.FetchProfile(http.DefaultClient, username)
+		filename, err := xdg.DataFile(fmt.Sprintf("rscli/alog/%s.ljson", username))
+		if err != nil {
+			return err
+		}
+
+		f, err := os.Open(filename)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+
+		c := &ClueScroll{
+			Difficulties: make(map[string]int),
+		}
+
+		err = runemetrics.IterateActivities(f, c)
 		if err != nil {
 			return err
 		}
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetAutoWrapText(false)
-		table.SetHeader([]string{"When", "Activity"})
+		table.SetHeader([]string{"Difficulty", "Amount"})
 		defer table.Render()
 
-		for _, activity := range profile.Activities {
-			table.Append([]string{activity.Date.Local().Format("02-Jan-2006 15:04"), activity.Details})
+		for difficulty, amount := range c.Difficulties {
+			table.Append([]string{difficulty, fmt.Sprintf("%d", amount)})
 		}
+
 		return nil
 	},
 }
 
-func init() {
-	alogCmd.AddCommand(alogUpdate)
-	alogCmd.AddCommand(alogKillCount)
-	alogCmd.AddCommand(alogClueScrolls)
+type ClueScroll struct {
+	Difficulties map[string]int
+}
+
+func (c *ClueScroll) HandleActivity(activity runemetrics.Activity) error {
+	clue, err := activity.ClueScroll()
+	if err != nil { // error really just means it's probably not a bosskill, so we ignore it
+		return nil
+	}
+	c.Difficulties[clue.Difficulty]++
+	return nil
 }
