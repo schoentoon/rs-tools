@@ -39,8 +39,17 @@ func ParseBossKills(activity Activity) (out *BossKills, err error) {
 	results := iKilledRegex.FindStringSubmatch(activity.Text)
 	if len(results) > 0 {
 		out = &BossKills{
-			Boss: strings.TrimRight(results[2], "s"),
+			Boss: results[2],
 		}
+
+		// we'll want to rip off the s at the end of most bosses so it's not a plural
+		// however there is one boss right now (Jan-11 2021) that ends with an s, where
+		// we of course don't want to just rip off the s at the end. This may need to be
+		// updated in the future as new bosses come out. As of now it's just Telos
+		if !strings.EqualFold(out.Boss, "Telos") {
+			out.Boss = strings.TrimRight(out.Boss, "s")
+		}
+
 		if results[1] == "" {
 			out.Amount = 1
 		} else {

@@ -56,6 +56,11 @@ func TestBossKillsParsing(t *testing.T) {
 			BossKills:   BossKills{Boss: "Magister", Amount: 9},
 			ExpectError: false,
 		},
+		{
+			Activity:    Activity{Details: "I killed 4 Telos, the final defenders of the Heart of Gielinor.", Text: "I killed 4 Telos."},
+			BossKills:   BossKills{Boss: "Telos", Amount: 4},
+			ExpectError: false,
+		},
 	}
 
 	for _, c := range cases {
