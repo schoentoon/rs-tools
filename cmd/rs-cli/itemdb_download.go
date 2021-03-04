@@ -11,12 +11,20 @@ import (
 	"gitlab.com/schoentoon/rs-tools/lib/ge/itemdb"
 )
 
+func init() {
+	filename, err := xdg.DataFile(ITEMDB_LOCATION)
+	if err != nil {
+		panic(err)
+	}
+	itemDBDownloadCmd.PersistentFlags().StringP("file", "f", filename, "Location to write down the item database file")
+}
+
 var itemDBDownloadCmd = &cobra.Command{
 	Use:   "download",
 	Short: "Download and fill a local copy of the item database",
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		filename, err := xdg.DataFile(ITEMDB_LOCATION)
+		filename, err := cmd.PersistentFlags().GetString("file")
 		if err != nil {
 			return err
 		}
