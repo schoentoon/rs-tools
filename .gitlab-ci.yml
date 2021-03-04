@@ -4,6 +4,7 @@ stages:
   - test
   - build
   - download-itemdb
+  - deploy
 
 .go-generate: &go-generate
   before_script:
@@ -37,6 +38,8 @@ build:
 
 download-itemdb:
   stage: download-itemdb
+  only:
+    - schedules
   dependencies:
     - build
   script:
@@ -44,3 +47,16 @@ download-itemdb:
   artifacts:
     paths:
       - ./items.ljson
+
+pages:
+  stage: deploy
+  only:
+    - schedules
+  dependencies:
+    - download-itemdb
+  script:
+    - mkdir public
+    - cp items.ljson public/
+  artifacts:
+    paths:
+      - public
