@@ -76,7 +76,7 @@ var alogUpdate = &cobra.Command{
 		if len(existing) > 0 {
 			newer = runemetrics.NewAchievementsSince(existing, profile.Activities)
 			if len(newer) >= 20 {
-				color.New(color.FgRed).Printf("20 new activities, likely missing some in between!\n")
+				_, _ = color.New(color.FgRed).Printf("20 new activities, likely missing some in between!\n")
 			}
 		}
 

@@ -3,6 +3,7 @@ image: golang:latest
 stages:
   - test
   - build
+  - download-itemdb
 
 .go-generate: &go-generate
   before_script:
@@ -31,5 +32,14 @@ build:
   <<: *go-generate
   script:
     - find cmd -type d -mindepth 1 -maxdepth 1 -exec go build ./{}/... \;
+  artifacts:
+    untracked: true
+
+download-itemdb:
+  stage: download-itemdb
+  dependencies:
+    - build
+  script:
+    - ./rs-cli itemdb download
   artifacts:
     untracked: true
