@@ -38,6 +38,8 @@ build:
 
 download-itemdb:
   stage: download-itemdb
+  tags:
+    - external
   only:
     - schedules
   dependencies:
@@ -50,6 +52,8 @@ download-itemdb:
 
 pages:
   stage: deploy
+  tags:
+    - external
   only:
     - schedules
   dependencies:
