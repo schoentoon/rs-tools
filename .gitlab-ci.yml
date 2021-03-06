@@ -52,8 +52,6 @@ download-itemdb:
 
 pages:
   stage: deploy
-  tags:
-    - external
   only:
     - schedules
   dependencies:
