@@ -55,38 +55,10 @@ func TestVoiceOfSerenEmptyJSON(t *testing.T) {
 	assert.Nil(t, res)
 }
 
-func TestPossibleNextVoiceOfSeren(t *testing.T) {
-	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/vos_history.json")
-		if err != nil {
-			t.Fatal(err)
-		}
-		return 200, string(data)
-	})
-
-	res, err := PossibleNextVoiceOfSeren(client)
-	assert.Nil(t, err)
-
-	assert.Len(t, res, 4)
-
-	assert.Contains(t, res, Amlodd)
-	assert.Contains(t, res, Cadarn)
-	assert.Contains(t, res, Meilyr)
-	assert.Contains(t, res, Trahaearn)
-}
-
 func TestVoiceOfSerenOnline(t *testing.T) {
 	lib.TestOnline(t)
 
 	_, err := VoiceOfSeren(http.DefaultClient)
-
-	assert.Nil(t, err)
-}
-
-func TestPossibleNewVoiceOfSerenOnline(t *testing.T) {
-	lib.TestOnline(t)
-
-	_, err := PossibleNextVoiceOfSeren(http.DefaultClient)
 
 	assert.Nil(t, err)
 }
