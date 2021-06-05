@@ -8,7 +8,7 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
 	"gitlab.com/schoentoon/rs-tools/lib/ge"
-	"gitlab.com/schoentoon/rs-tools/lib/ge/itemdb"
+	"gitlab.com/schoentoon/rs-tools/lib/ge/download"
 )
 
 const ITEMDB_LOCATION = "rscli/itemdb.ljson"
@@ -24,7 +24,7 @@ func readItemDB() ge.SearchItemInterface {
 	}
 	defer f.Close()
 
-	out, err := itemdb.NewFromReader(f)
+	out, err := download.NewDBFromReader(f)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		return geApi()
