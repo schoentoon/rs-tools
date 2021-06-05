@@ -40,7 +40,7 @@ func (m *meta) Download(client *http.Client, db ge.SearchItemInterface, w io.Wri
 		client.Jar = jar
 	}
 
-	out := make(chan *ge.Item)
+	out := make(chan ge.Item)
 
 	copy := &meta{
 		Categories: m.Categories,
@@ -88,7 +88,7 @@ type itemsAPI struct {
 	Items []ge.Item `json:"items"`
 }
 
-func (m *meta) download(client *http.Client, db ge.SearchItemInterface, ch chan *ge.Item, progCh chan<- *Progress, progress *Progress) error {
+func (m *meta) download(client *http.Client, db ge.SearchItemInterface, ch chan ge.Item, progCh chan<- *Progress, progress *Progress) error {
 	defer close(ch)
 
 	for category := 0; category <= CATEGORY_COUNT; category++ {
@@ -117,7 +117,7 @@ func (m *meta) alreadyInserted(id int64) bool {
 	return false
 }
 
-func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, ch chan *ge.Item, category, left int, alpha string, progCh chan<- *Progress, progress *Progress) error {
+func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, ch chan ge.Item, category, left int, alpha string, progCh chan<- *Progress, progress *Progress) error {
 	if left == 0 {
 		return nil
 	}
@@ -158,7 +158,7 @@ func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, 
 
 			exists, _ := db.GetItem(item.ID)
 			if exists == nil {
-				ch <- &item
+				ch <- item
 				left--
 			}
 
