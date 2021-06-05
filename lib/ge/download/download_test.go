@@ -21,7 +21,7 @@ func TestDownload(t *testing.T) {
 		Categories: map[int]category{
 			0: {
 				Count: map[string]int{
-					"a": 24,
+					"a": 12,
 				},
 			},
 		},
@@ -43,7 +43,7 @@ func TestDownload(t *testing.T) {
 	err = meta.Download(client, NewEmptyDB(), &buffer, ch)
 	assert.Nil(t, err)
 
-	assert.Equal(t, int32(2), count)
+	assert.Equal(t, int32(1), count)
 
 	last := &Progress{
 		Tasks:    0,

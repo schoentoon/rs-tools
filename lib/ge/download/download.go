@@ -152,8 +152,6 @@ func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, 
 		}
 
 		for _, item := range out.Items {
-			left--
-
 			if m.alreadyInserted(item.ID) {
 				continue
 			}
@@ -161,6 +159,7 @@ func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, 
 			exists, _ := db.GetItem(item.ID)
 			if exists == nil {
 				ch <- &item
+				left--
 			}
 
 			m.inserted = append(m.inserted, item.ID)
