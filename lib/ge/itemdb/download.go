@@ -14,6 +14,12 @@ import (
 	"gitlab.com/schoentoon/rs-tools/lib/ge"
 )
 
+type itemWithMetadata struct {
+	*ge.Item
+	Category int  `json:"category"`
+	Alpha    rune `json:"alpha"`
+}
+
 type items struct {
 	Items []ge.Item `json:"items"`
 }
@@ -87,14 +93,14 @@ func (t *downloadTask) Process(client *http.Client, db *DB, progCh chan<- *Progr
 
 func Download(client *http.Client, concurrency int, progCh chan<- *Progress) (*DB, error) {
 	db := New()
-	err := db.Update(client, concurrency, progCh)
+	err := db.update(client, concurrency, progCh)
 	if err != nil {
 		return nil, err
 	}
 	return db, nil
 }
 
-func (db *DB) Update(client *http.Client, concurrency int, progCh chan<- *Progress) (err error) {
+func (db *DB) update(client *http.Client, concurrency int, progCh chan<- *Progress) (err error) {
 	var wg sync.WaitGroup
 	ch := make(chan downloadTask)
 	errCh := make(chan error, 1)

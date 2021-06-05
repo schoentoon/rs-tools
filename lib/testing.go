@@ -14,8 +14,12 @@ type roundTripFunc func(req *http.Request) (int, string)
 func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	status, in := f(req)
 	resp := &http.Response{
-		StatusCode: status,
-		Header:     make(http.Header),
+		StatusCode:    status,
+		Proto:         "HTTP/1.1",
+		ProtoMajor:    1,
+		ProtoMinor:    1,
+		Header:        make(http.Header),
+		ContentLength: int64(len(in)),
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewBufferString(in))
 	return resp, nil
