@@ -6,6 +6,8 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
+	"github.com/vbauerster/mpb/v5"
+	"github.com/vbauerster/mpb/v5/decor"
 	"gitlab.com/schoentoon/rs-tools/lib/ge/download"
 )
 
@@ -68,12 +70,39 @@ var itemDBDownloadCmd = &cobra.Command{
 			db = download.NewEmptyDB()
 		}
 
+		p := mpb.New(mpb.WithWidth(64), mpb.WithOutput(os.Stdout))
+		tasks := p.AddBar(int64(0),
+			mpb.PrependDecorators(
+				decor.CountersNoUnit("%d / %d "),
+				decor.Percentage(),
+			),
+			mpb.AppendDecorators(
+				decor.OnComplete(
+					decor.AverageETA(decor.ET_STYLE_MMSS, decor.WC{W: 4}), "done",
+				),
+			),
+		)
+
+		progCh := make(chan *download.Progress, 1)
+		errCh := make(chan error, 1)
+
 		dbf, err = os.OpenFile(filename, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0600)
 		if err != nil {
 			return err
 		}
 		defer dbf.Close()
 
-		return meta.Download(http.DefaultClient, db, dbf)
+		go func() {
+			errCh <- meta.Download(http.DefaultClient, db, dbf, progCh)
+		}()
+
+		for progress := range progCh {
+			tasks.SetTotal(progress.Tasks, progress.Tasks == progress.Finished)
+			tasks.SetCurrent(progress.Finished)
+		}
+
+		p.Wait()
+
+		return <-errCh
 	},
 }

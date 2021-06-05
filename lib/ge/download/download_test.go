@@ -21,7 +21,7 @@ func TestDownload(t *testing.T) {
 		Categories: map[int]category{
 			0: {
 				Count: map[string]int{
-					"a": 13,
+					"a": 24,
 				},
 			},
 		},
@@ -39,8 +39,20 @@ func TestDownload(t *testing.T) {
 
 	var buffer bytes.Buffer
 
-	err = meta.Download(client, NewEmptyDB(), &buffer)
+	ch := make(chan *Progress, 1024*64) // we make this buffered channel large enough to just keep everything in memory
+	err = meta.Download(client, NewEmptyDB(), &buffer, ch)
 	assert.Nil(t, err)
 
 	assert.Equal(t, int32(2), count)
+
+	last := &Progress{
+		Tasks:    0,
+		Finished: 0,
+	}
+	for progress := range ch {
+		assert.GreaterOrEqual(t, progress.Finished, last.Finished)
+		last = progress
+	}
+
+	assert.Equal(t, last.Finished, last.Tasks)
 }

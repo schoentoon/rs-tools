@@ -9,13 +9,29 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"sync/atomic"
 
 	"github.com/cenkalti/backoff/v4"
 	"gitlab.com/schoentoon/rs-tools/lib/ge"
 	"golang.org/x/net/publicsuffix"
 )
 
-func (m *meta) Download(client *http.Client, db ge.SearchItemInterface, w io.Writer) error {
+type Progress struct {
+	Tasks    int64
+	Finished int64
+}
+
+func (p *Progress) send(ch chan<- *Progress) {
+	// send it non blocking as we have no clue about the underlaying channel
+	if ch != nil {
+		select {
+		case ch <- p:
+		default:
+		}
+	}
+}
+
+func (m *meta) Download(client *http.Client, db ge.SearchItemInterface, w io.Writer, progCh chan<- *Progress) error {
 	if client.Jar == nil {
 		jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 		if err != nil {
@@ -32,8 +48,25 @@ func (m *meta) Download(client *http.Client, db ge.SearchItemInterface, w io.Wri
 		inserted:   make([]int64, 0, 1024),
 	}
 
+	progress := &Progress{
+		Tasks:    0,
+		Finished: 0,
+	}
+
+	for _, category := range copy.Categories {
+		for _, count := range category.Count {
+			if count > 0 {
+				progress.Tasks++
+			}
+		}
+	}
+
+	if progCh != nil {
+		defer close(progCh)
+	}
+
 	go func() {
-		err := copy.download(client, db, out)
+		err := copy.download(client, db, out, progCh, progress)
 		if err != nil {
 			log.Println(err)
 		}
@@ -55,12 +88,12 @@ type itemsAPI struct {
 	Items []ge.Item `json:"items"`
 }
 
-func (m *meta) download(client *http.Client, db ge.SearchItemInterface, ch chan *ge.Item) error {
+func (m *meta) download(client *http.Client, db ge.SearchItemInterface, ch chan *ge.Item, progCh chan<- *Progress, progress *Progress) error {
 	defer close(ch)
 
 	for category := 0; category <= CATEGORY_COUNT; category++ {
 		for alpha, count := range m.Categories[category].Count {
-			err := m.downloadCategory(client, db, ch, category, count, alpha)
+			err := m.downloadCategory(client, db, ch, category, count, alpha, progCh, progress)
 			if err != nil {
 				return err
 			}
@@ -84,7 +117,7 @@ func (m *meta) alreadyInserted(id int64) bool {
 	return false
 }
 
-func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, ch chan *ge.Item, category, left int, alpha string) error {
+func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, ch chan *ge.Item, category, left int, alpha string, progCh chan<- *Progress, progress *Progress) error {
 	if left == 0 {
 		return nil
 	}
@@ -133,8 +166,17 @@ func (m *meta) downloadCategory(client *http.Client, db ge.SearchItemInterface, 
 			m.inserted = append(m.inserted, item.ID)
 		}
 
+		atomic.AddInt64(&progress.Finished, 1)
+		progress.send(progCh)
+
 		if len(out.Items) < 12 || len(out.Items) == 0 {
 			break
+		}
+
+		if left > 0 {
+			// looks like we have an extra task
+			atomic.AddInt64(&progress.Tasks, 1)
+			progress.send(progCh)
 		}
 	}
 
