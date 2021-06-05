@@ -1,4 +1,4 @@
-//go:generate stringer -type=ClueDifficulty
+//go:generate go run golang.org/x/tools/cmd/stringer -type=ClueDifficulty
 package runemetrics
 
 import (

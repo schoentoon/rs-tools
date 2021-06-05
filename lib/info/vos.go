@@ -1,4 +1,4 @@
-//go:generate stringer -type=ElvenClan
+//go:generate go run golang.org/x/tools/cmd/stringer -type=ElvenClan
 package info
 
 import (
