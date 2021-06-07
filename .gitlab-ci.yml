@@ -45,10 +45,11 @@ download-itemdb:
   dependencies:
     - build
   script:
-    - ./rs-cli itemdb download -f ./items.ljson
+    - ./rs-cli itemdb download -f ./items.ljson -m meta.json
   artifacts:
     paths:
       - ./items.ljson
+      - ./meta.json
 
 pages:
   stage: deploy
@@ -58,7 +59,7 @@ pages:
     - download-itemdb
   script:
     - mkdir public
-    - cp items.ljson public/
+    - cp items.ljson meta.json public/
   artifacts:
     paths:
       - public
