@@ -32,6 +32,11 @@ func (p *Progress) send(ch chan<- *Progress) {
 }
 
 func (m *meta) Download(client *http.Client, db ge.SearchItemInterface, w io.Writer, progCh chan<- *Progress) error {
+	// if we're empty and require no updates, we can just call it quits here
+	if m.IsEmpty() {
+		return nil
+	}
+
 	if client.Jar == nil {
 		jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 		if err != nil {

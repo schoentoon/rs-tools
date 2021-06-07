@@ -40,24 +40,38 @@ type lastUpdateAPI struct {
 	LastConfigUpdateRuneday int `json:"lastConfigUpdateRuneday"`
 }
 
-func DiffMetadataFromFile(client *http.Client, filename string) (*meta, error) {
+var ErrNotOutdated = errors.New("Your local copy isn't outdated and there's no need to update it.")
+
+// DiffMetadataFromFile Compare against a previously written metadata file and determine whether we should update
+// The return values are as follows, the first meta is the new metadata that should be stored, the second is the diff
+func DiffMetadataFromFile(client *http.Client, filename string) (*meta, *meta, error) {
 	f, err := os.Open(filename)
 	if os.IsNotExist(err) {
-		return BuildMetadata(client)
+		meta, err := BuildMetadata(client)
+		return meta, meta, err
 	}
 	defer f.Close()
 
 	old, err := ReadMetadata(f)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	outdated, err := old.IsOutdated(client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if !outdated {
+		return old, nil, ErrNotOutdated
 	}
 
 	new, err := BuildMetadata(client)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return new.Diff(old), nil
+	return new, new.Diff(old), nil
 }
 
 func fetchCategory(client *http.Client, c int) (*category, error) {
@@ -116,6 +130,28 @@ func BuildMetadata(client *http.Client) (*meta, error) {
 	}
 
 	// at the end we will check the api for the last time the database was updated and add it to our metadata
+	lastUpdate, err := m.getLatestRunedateUpdate(client)
+	if err != nil {
+		return nil, err
+	}
+
+	m.Runedate = lastUpdate
+
+	return m, nil
+}
+
+// ReadMetadata recreate a metadata structure from most likely a file
+func ReadMetadata(r io.Reader) (*meta, error) {
+	var out meta
+
+	err := json.NewDecoder(r).Decode(&out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (m *meta) getLatestRunedateUpdate(client *http.Client) (int, error) {
 	var lastConfigUpdateRuneday lastUpdateAPI
 	err := backoff.Retry(func() error {
 		resp, err := client.Get("https://secure.runescape.com/m=itemdb_rs/api/info.json")
@@ -131,23 +167,20 @@ func BuildMetadata(client *http.Client) (*meta, error) {
 		return json.NewDecoder(resp.Body).Decode(&lastConfigUpdateRuneday)
 	}, backoff.WithMaxRetries(backoff.NewExponentialBackOff(), 10))
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 
-	m.Runedate = lastConfigUpdateRuneday.LastConfigUpdateRuneday
-
-	return m, nil
+	return lastConfigUpdateRuneday.LastConfigUpdateRuneday, nil
 }
 
-// ReadMetadata recreate a metadata structure from most likely a file
-func ReadMetadata(r io.Reader) (*meta, error) {
-	var out meta
-
-	err := json.NewDecoder(r).Decode(&out)
+// IsOutdated this will simply check the runedate of the existing meta structure against the api
+func (m *meta) IsOutdated(client *http.Client) (bool, error) {
+	latest, err := m.getLatestRunedateUpdate(client)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
-	return &out, nil
+
+	return latest > m.Runedate, nil
 }
 
 // Serialize mostly used to save the metadata structure to disk or whatever
@@ -174,4 +207,17 @@ func (m *meta) Diff(m2 *meta) *meta {
 	out.Runedate = m.Runedate - m2.Runedate
 
 	return out
+}
+
+// IsEmpty Check whether the meta struct is empty or not, if yes calling download is pointless
+func (m *meta) IsEmpty() bool {
+	for _, category := range m.Categories {
+		for _, count := range category.Count {
+			if count > 0 {
+				return false
+			}
+		}
+	}
+
+	return true
 }

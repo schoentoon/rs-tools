@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -40,12 +41,17 @@ var itemDBDownloadCmd = &cobra.Command{
 			return err
 		}
 
-		meta, err := download.DiffMetadataFromFile(http.DefaultClient, metafile)
+		meta, diff, err := download.DiffMetadataFromFile(http.DefaultClient, metafile)
 		if err != nil {
+			// if we are up to date we will just show the 'error' message and exit normally without an error
+			if err == download.ErrNotOutdated {
+				fmt.Printf("%s\n", err.Error())
+				return nil
+			}
 			return err
 		}
 
-		metaf, err := os.OpenFile(metafile, os.O_CREATE|os.O_RDWR, 0600)
+		metaf, err := os.OpenFile(metafile, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0600)
 		if err != nil {
 			return err
 		}
@@ -54,6 +60,11 @@ var itemDBDownloadCmd = &cobra.Command{
 		err = meta.Serialize(metaf)
 		if err != nil {
 			return err
+		}
+
+		if diff.IsEmpty() {
+			fmt.Printf("No new items were added this week, so we're already done.\n")
+			return nil
 		}
 
 		var db *download.DB
@@ -93,7 +104,7 @@ var itemDBDownloadCmd = &cobra.Command{
 		defer dbf.Close()
 
 		go func() {
-			errCh <- meta.Download(http.DefaultClient, db, dbf, progCh)
+			errCh <- diff.Download(http.DefaultClient, db, dbf, progCh)
 		}()
 
 		for progress := range progCh {

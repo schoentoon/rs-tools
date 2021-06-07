@@ -69,7 +69,11 @@ func TestDiffMetadataFromFile(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
 		atomic.AddInt32(&count, 1)
 		if req.URL.Path == "/m=itemdb_rs/api/info.json" {
-			return 200, `{"lastConfigUpdateRuneday":7034}`
+			if atomic.LoadInt32(&count) == 1 {
+				// first request will be to test up to date, any later calls will be out of date
+				return 200, `{"lastConfigUpdateRuneday":7034}`
+			}
+			return 200, `{"lastConfigUpdateRuneday":7040}`
 		} else if req.URL.Path == "/m=itemdb_rs/api/catalogue/category.json" {
 			return 200, string(metaReply)
 		}
@@ -77,13 +81,61 @@ func TestDiffMetadataFromFile(t *testing.T) {
 		return 500, "" // just making the compiler happy
 	})
 
-	meta, err := DiffMetadataFromFile(client, "testdata/meta.0.json")
+	_, _, err = DiffMetadataFromFile(client, "testdata/meta.0.json")
+	assert.Equal(t, ErrNotOutdated, err)
+
+	meta, _, err := DiffMetadataFromFile(client, "testdata/meta.0.json")
 	assert.Nil(t, err)
 
 	// we really just check if this meta is filled in properly, +1 due to zero indexing
 	assert.Len(t, meta.Categories, CATEGORY_COUNT+1)
 
 	// we count the amount of requests that were made, this should be the amount of categories
-	// again we do plus 1 due to zero indexing.. and 1 extra call for the runedate
-	assert.Equal(t, int32(CATEGORY_COUNT+1+1), count)
+	// again we do plus 1 due to zero indexing.. and 3 extra calls for the runedate from the outdated tests
+	assert.Equal(t, int32(CATEGORY_COUNT+1+3), count)
+}
+
+func TestIsOutdated(t *testing.T) {
+	var count int32
+	client := lib.NewTestClient(func(req *http.Request) (int, string) {
+		atomic.AddInt32(&count, 1)
+		if req.URL.Path == "/m=itemdb_rs/api/info.json" {
+			return 200, `{"lastConfigUpdateRuneday":7040}`
+		}
+		t.Error("Unexpected http call", req)
+		return 500, "" // just making the compiler happy
+	})
+
+	f, err := os.Open("testdata/meta.0.json")
+	assert.Nil(t, err)
+	defer f.Close()
+
+	meta, err := ReadMetadata(f)
+	assert.Nil(t, err)
+
+	outdated, err := meta.IsOutdated(client)
+	assert.Nil(t, err)
+	assert.True(t, outdated)
+
+	assert.Equal(t, int32(1), count)
+}
+
+func TestIsEmpty(t *testing.T) {
+	empty := &meta{
+		Categories: make(map[int]category),
+	}
+
+	assert.True(t, empty.IsEmpty())
+
+	notEmpty := &meta{
+		Categories: map[int]category{
+			0: {
+				Count: map[string]int{
+					"a": 12,
+				},
+			},
+		},
+	}
+
+	assert.False(t, notEmpty.IsEmpty())
 }
