@@ -44,6 +44,9 @@ download-itemdb:
     - schedules
   dependencies:
     - build
+  before_script:
+    - wget https://schoentoon.gitlab.io/rs-tools/items.ljson
+    - wget https://schoentoon.gitlab.io/rs-tools/meta.json
   script:
     - ./rs-cli itemdb download -f ./items.ljson -m meta.json
   artifacts:
