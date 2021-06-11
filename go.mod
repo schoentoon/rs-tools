@@ -6,6 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.6.0
 	github.com/adrg/xdg v0.2.3
 	github.com/andybalholm/cascadia v1.2.0 // indirect
+	github.com/ararog/timeago v0.0.0-20160328174124-e9969cf18b8d // indirect
 	github.com/cenkalti/backoff/v4 v4.1.0
 	github.com/fatih/color v1.10.0
 	github.com/kr/text v0.2.0 // indirect
