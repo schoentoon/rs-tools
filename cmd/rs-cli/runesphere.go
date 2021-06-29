@@ -23,7 +23,7 @@ var runesphereCmd = &cobra.Command{
 		if res.Active {
 			fmt.Printf("Runesphere is currently active\n")
 		} else {
-			fmt.Printf("The next Runesphere will be active in %s at %s\n", time.Until(res.Next), res.Next)
+			fmt.Printf("The next Runesphere will be active in %s at %s\n", time.Until(res.Next), res.Next.Local())
 		}
 
 		return nil
