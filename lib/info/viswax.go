@@ -79,7 +79,6 @@ func Viswax(client *http.Client) (out *ViswaxCombination, err error) {
 		}
 
 		s.Find("td").Each(func(i int, s *goquery.Selection) {
-			fmt.Printf("%s\n", s.Text())
 			if attr, ok := s.Attr("rowspan"); ok && attr == "3" {
 				if out.Date.IsZero() {
 					out.Date, err = time.Parse("2 Jan 2006", s.Text())
