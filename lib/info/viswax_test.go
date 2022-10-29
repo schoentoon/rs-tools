@@ -2,8 +2,8 @@ package info
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +12,7 @@ import (
 
 func TestViswax(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/viswax.json")
+		data, err := os.ReadFile("testdata/viswax.json")
 		if err != nil {
 			t.Fatal(err)
 		}

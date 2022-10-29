@@ -2,8 +2,8 @@ package download
 
 import (
 	"bytes"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"sync/atomic"
 	"testing"
 
@@ -12,7 +12,7 @@ import (
 )
 
 func TestDownload(t *testing.T) {
-	itemsReply, err := ioutil.ReadFile("testdata/items.api.json")
+	itemsReply, err := os.ReadFile("testdata/items.api.json")
 	if err != nil {
 		t.Error(err)
 	}

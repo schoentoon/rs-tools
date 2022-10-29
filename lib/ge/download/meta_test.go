@@ -1,7 +1,6 @@
 package download
 
 import (
-	"io/ioutil"
 	"net/http"
 	"os"
 	"sync/atomic"
@@ -32,7 +31,7 @@ func TestDiff(t *testing.T) {
 }
 
 func TestBuildMetadata(t *testing.T) {
-	metaReply, err := ioutil.ReadFile("testdata/meta.api.json")
+	metaReply, err := os.ReadFile("testdata/meta.api.json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -60,7 +59,7 @@ func TestBuildMetadata(t *testing.T) {
 }
 
 func TestDiffMetadataFromFile(t *testing.T) {
-	metaReply, err := ioutil.ReadFile("testdata/meta.api.json")
+	metaReply, err := os.ReadFile("testdata/meta.api.json")
 	if err != nil {
 		t.Error(err)
 	}

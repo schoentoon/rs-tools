@@ -3,7 +3,7 @@ package lib
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -21,7 +21,7 @@ func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 		Header:        make(http.Header),
 		ContentLength: int64(len(in)),
 	}
-	resp.Body = ioutil.NopCloser(bytes.NewBufferString(in))
+	resp.Body = io.NopCloser(bytes.NewBufferString(in))
 	return resp, nil
 }
 

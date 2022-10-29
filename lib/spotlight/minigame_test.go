@@ -1,8 +1,8 @@
 package spotlight
 
 import (
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -12,7 +12,7 @@ import (
 
 func TestMinigames(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/minigame.json")
+		data, err := os.ReadFile("testdata/minigame.json")
 		if err != nil {
 			t.Fatal(err)
 		}

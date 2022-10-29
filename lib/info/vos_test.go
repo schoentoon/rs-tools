@@ -1,8 +1,8 @@
 package info
 
 import (
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,7 +31,7 @@ func TestParseElvenClan(t *testing.T) {
 
 func TestVoiceOfSeren(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/vos.json")
+		data, err := os.ReadFile("testdata/vos.json")
 		if err != nil {
 			t.Fatal(err)
 		}

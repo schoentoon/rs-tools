@@ -3,7 +3,6 @@ package runemetrics
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -16,7 +15,7 @@ func TestFetchProfile(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
 		assert.Contains(t, req.URL.String(), "Schoentoon")
 
-		data, err := ioutil.ReadFile("testdata/profile.json")
+		data, err := os.ReadFile("testdata/profile.json")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -95,7 +94,7 @@ func TestNoProfile(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
 		assert.Contains(t, req.URL.String(), "Schoentoon")
 
-		data, err := ioutil.ReadFile("testdata/no_profile.json")
+		data, err := os.ReadFile("testdata/no_profile.json")
 		if err != nil {
 			t.Fatal(err)
 		}

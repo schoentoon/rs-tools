@@ -1,8 +1,8 @@
 package info
 
 import (
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 	"time"
 
@@ -12,7 +12,7 @@ import (
 
 func TestRunesphere(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/runesphere.json")
+		data, err := os.ReadFile("testdata/runesphere.json")
 		if err != nil {
 			t.Fatal(err)
 		}

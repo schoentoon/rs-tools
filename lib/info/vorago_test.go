@@ -1,8 +1,8 @@
 package info
 
 import (
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +11,7 @@ import (
 
 func TestVorago(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/vorago.json")
+		data, err := os.ReadFile("testdata/vorago.json")
 		if err != nil {
 			t.Fatal(err)
 		}

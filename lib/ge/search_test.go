@@ -1,8 +1,8 @@
 package ge
 
 import (
-	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,7 +11,7 @@ import (
 
 func TestSearch(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/search_wine.html")
+		data, err := os.ReadFile("testdata/search_wine.html")
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -40,7 +40,7 @@ func TestSearchNotFound(t *testing.T) {
 
 func TestSearchInvalidItems(t *testing.T) {
 	client := lib.NewTestClient(func(req *http.Request) (int, string) {
-		data, err := ioutil.ReadFile("testdata/search_invalid.html")
+		data, err := os.ReadFile("testdata/search_invalid.html")
 		if err != nil {
 			t.Fatal(err)
 		}
