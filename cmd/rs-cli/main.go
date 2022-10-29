@@ -16,6 +16,7 @@ func main() {
 	rootCmd.AddCommand(spotlightCmd)
 	rootCmd.AddCommand(penguinsCmd)
 	rootCmd.AddCommand(runesphereCmd)
+	rootCmd.AddCommand(viswaxCmd)
 
 	err := rootCmd.Execute()
 	if err != nil {
