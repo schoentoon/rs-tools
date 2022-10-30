@@ -1,7 +1,6 @@
 package info
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"testing"
@@ -19,16 +18,23 @@ func TestViswax(t *testing.T) {
 		return 200, string(data)
 	})
 
-	_, err := Viswax(client)
+	res, err := Viswax(client)
 	assert.Nil(t, err)
+
+	assert.Equal(t, "Air rune", res.Primary.Rune)
+	assert.Equal(t, int64(25000), res.Primary.Cost)
+	assert.Equal(t, "Chaos rune", res.Secondary[0].Rune)
+	assert.Equal(t, int64(71500), res.Secondary[0].Cost)
+	assert.Equal(t, "Steam rune", res.Secondary[1].Rune)
+	assert.Equal(t, int64(781000), res.Secondary[1].Cost)
+	assert.Equal(t, "Blood rune", res.Secondary[2].Rune)
+	assert.Equal(t, int64(371000), res.Secondary[2].Cost)
 }
 
 func TestViswaxOnline(t *testing.T) {
-	//lib.TestOnline(t)
+	lib.TestOnline(t)
 
-	res, err := Viswax(http.DefaultClient)
-
-	fmt.Printf("%+v", res)
+	_, err := Viswax(http.DefaultClient)
 
 	assert.Nil(t, err)
 }
