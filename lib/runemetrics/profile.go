@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 )
 
 func FetchProfile(client *http.Client, username string) (*Profile, error) {
@@ -89,6 +90,18 @@ func NewAchievementsSince(old, new []Activity) []Activity {
 		}
 		out = append(out, a)
 	}
+
+	return out
+}
+
+// Sort combine and sort activities
+func Sort(activities ...[]Activity) []Activity {
+	out := []Activity{}
+	for _, a := range activities {
+		out = append(out, a...)
+	}
+
+	sort.Slice(out, func(i, j int) bool { return out[i].Date.Unix() < out[j].Date.Unix() })
 
 	return out
 }
