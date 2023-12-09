@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/adrg/xdg"
@@ -80,15 +79,20 @@ var alogUpdate = &cobra.Command{
 			}
 		}
 
-		fout, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0600)
+		activities := runemetrics.Sort(existing, newer)
+
+		fout, err := os.OpenFile(fmt.Sprintf("%s.tmp", filename), os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0600)
 		if err != nil {
 			return err
 		}
 		defer fout.Close()
 
-		sort.Slice(newer, func(i, j int) bool { return newer[i].Date.Unix() < newer[j].Date.Unix() })
+		err = runemetrics.WriteActivities(fout, activities)
+		if err != nil {
+			return err
+		}
 
-		return runemetrics.WriteActivities(fout, newer)
+		return os.Rename(fmt.Sprintf("%s.tmp", filename), filename)
 	},
 }
 

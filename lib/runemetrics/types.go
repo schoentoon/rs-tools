@@ -78,7 +78,7 @@ const (
 	Divination
 	Invention
 	Archaeology
-  Necromancy
+	Necromancy
 )
 
 type SkillValue struct {
